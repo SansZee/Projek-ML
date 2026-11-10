@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Tolak berkas ter-stage yang lebih besar dari batas.
+#
+# .gitignore mencegah kebanyakan kecelakaan, tapi tidak menolong kalau ada yang
+# memakai `git add -f` atau menaruh berkas besar di folder yang memang di-track.
+# Hook ini pengaman terakhir sebelum riwayat git membengkak permanen.
+#
+# Pasang sekali per laptop:
+#   git config core.hooksPath .githooks
+#
+# Batas bisa diubah tanpa menyentuh berkas ini:
+#   GIT_MAX_FILE_MB=20 git commit ...
+
+set -u
+
+limit_mb="${GIT_MAX_FILE_MB:-5}"
+limit_bytes=$((limit_mb * 1024 * 1024))
+
+staged=$(mktemp) || exit 1
+trap 'rm -f "$staged"' EXIT
+
+# -z: nama berkas aman walau mengandung spasi atau baris baru.
+git diff --cached --name-only -z --diff-filter=ACM >"$staged" || exit 1
+
+failed=0
+while IFS= read -r -d '' file; do
+    # Berkas yang dihapus dari indeks tidak punya blob; anggap 0.
+    size=$(git cat-file -s ":$file" 2>/dev/null) || size=0
+    [ -z "$size" ] && size=0
+    if [ "$size" -gt "$limit_bytes" ]; then
+        mb=$(awk "BEGIN { printf \"%.1f\", $size / 1048576 }")
+        printf '  %s  (%s MB)\n' "$file" "$mb" >&2
+        failed=1
+    fi
+done <"$staged"
+
+if [ "$failed" -ne 0 ]; then
+    cat >&2 <<EOF
+
+commit dibatalkan: ada berkas di atas ${limit_mb} MB.
+
+Berkas besar tidak masuk git: data/, media/, clips/, kiriman/, dan
+ekstensi video/audio/array sudah diabaikan. Kalau berkas ini memang perlu,
+naikkan batasnya sekali jalan:
+
+  GIT_MAX_FILE_MB=20 git commit ...
+
+Kalau berkas ini terlanjur masuk lewat 'git add -f', keluarkan dulu:
+
+  git rm --cached <berkas>
+
+EOF
+    exit 1
+fi
+
+exit 0

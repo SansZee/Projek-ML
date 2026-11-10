@@ -1,0 +1,87 @@
+# ── hasil pipeline: data, media, klip ─────────────────────────────
+# Folder di-ignore utuh. Skrip membuatnya sendiri lewat
+# mkdir(parents=True, exist_ok=True), jadi clone baru tidak butuh penanda.
+data/
+media/
+artifacts/
+clips/
+kiriman/
+renders/
+
+# ── video, audio, subtitle, gambar ────────────────────────────────
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.m4v
+*.m2ts
+*.mts
+*.mpg
+*.mpeg
+*.wav
+*.flac
+*.mp3
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.wma
+*.aiff
+*.srt
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tif
+*.tiff
+*.webp
+
+# aset gambar untuk dokumen tetap ikut
+!docs/**/*.png
+!docs/**/*.jpg
+
+# ── array & bobot model ───────────────────────────────────────────
+*.npy
+*.npz
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.ckpt
+*.h5
+*.pkl
+*.joblib
+
+# ── arsip serah-terima ────────────────────────────────────────────
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# ── environment ───────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+environment.lock.json
+
+# ── log & berkas sementara ────────────────────────────────────────
+*.log
+*.out
+nohup.out
+*.part
+*.tmp
+*~
+
+# ── editor & OS ───────────────────────────────────────────────────
+.idea/
+.DS_Store
+Thumbs.db

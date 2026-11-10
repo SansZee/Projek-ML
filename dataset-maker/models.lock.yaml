@@ -1,0 +1,53 @@
+# models.lock.yaml
+#
+# Bobot model adalah bagian dari reproduksibilitas. Nama model saja tidak cukup:
+# "large-v3" dari dua sumber berbeda bisa punya bobot berbeda.
+#
+# Isi kolom sha256 setelah unduhan pertama, dengan:
+#   uv run python -m emosi.bootstrap --verify
+# lalu catat hash berkas model di cache HuggingFace.
+#
+# Revisi (commit hash) HuggingFace lebih penting daripada sha256 berkas, karena
+# repo model bisa diperbarui. Pakai commit hash, bukan "main".
+
+asr:
+  name: large-v3
+  backend: faster-whisper
+  repo: Systran/faster-whisper-large-v3
+  revision: main            # ganti dengan commit hash sebelum eksperimen final
+  sha256: null
+
+face:
+  detector: retinaface
+  embedder: arcface
+  pack: buffalo_l           # insightface model pack
+  # Diunduh otomatis oleh insightface saat pertama dipakai:
+  #   https://github.com/deepinsight/insightface/releases/download/model-zoo/buffalo_l.zip
+  # ke ~/.insightface/models/buffalo_l. Salin folder itu ke laptop lain kalau
+  # tidak ada internet, lalu catat sha256 isinya.
+  dir: ~/.insightface/models/buffalo_l
+  sha256: null
+
+text:
+  - id: roberta-base
+    repo: FacebookAI/roberta-base
+    revision: main
+  - id: deberta-v3-base
+    repo: microsoft/deberta-v3-base
+    revision: main
+
+audio:
+  - id: wav2vec2-base
+    repo: facebook/wav2vec2-base-960h
+    revision: main
+  - id: hubert-base
+    repo: facebook/hubert-base-ls960
+    revision: main
+
+video:
+  - id: resnet50
+    source: torchvision
+  - id: efficientnet-b0
+    source: torchvision
+  - id: vit-base-16-224
+    source: timm
