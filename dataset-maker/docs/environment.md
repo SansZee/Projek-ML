@@ -127,13 +127,12 @@ uv run python -c "import onnxruntime as ort; print(ort.get_available_providers()
 Hasil yang benar memuat `CUDAExecutionProvider`. Tanpa itu, tahap 04 tetap
 jalan di CPU: 1–2 jam per film, bukan 5–10 menit.
 
-**Line ending.** Git for Windows default memakai CRLF, sedangkan hook
-`.githooks/pre-commit` adalah skrip bash. Setel di folder projek:
-
-```powershell
-git config core.autocrlf false
-git config core.longpaths true
-```
+**Line ending.** `.gitattributes` sudah memaksa LF untuk semua berkas teks,
+jadi hook `.githooks/pre-commit` tidak berubah menjadi CRLF walaupun Git for
+Windows memakai `core.autocrlf=true`. Path panjang diatur sekali dengan
+`git config --global core.longpaths true` (lihat panduan §2.1). Kalau clone
+lama masih bermasalah, checkout ulang: `git rm --cached -r .` lalu
+`git reset --hard`.
 
 ## 6. Docker (opsional, untuk tim dengan OS campur)
 
@@ -180,7 +179,7 @@ kamu serahkan ke koordinator.
 | `ffmpeg tidak ditemukan` | ffmpeg tidak di PATH | pasang, lalu buka ulang shell |
 | `winget: command not found` | Windows 10 lama | perbarui App Installer dari Microsoft Store, atau pasang manual |
 | `ffmpeg`/`ffprobe` masih tidak dikenal setelah winget | PATH belum dimuat | tutup dan buka ulang PowerShell |
-| `bad interpreter: /usr/bin/env bash^M` | berkas di-checkout dengan CRLF | `git config core.autocrlf false`, lalu checkout ulang |
+| `bad interpreter: /usr/bin/env bash^M` | clone lama masih CRLF | checkout ulang; `.gitattributes` sudah memaksa LF |
 | `Microsoft Visual C++ 14.0 required` saat `--extra face` | Build Tools belum ada | `winget install --id=Microsoft.VisualStudio.2022.BuildTools -e`, centang Desktop development with C++ |
 | `CUDAExecutionProvider` tidak muncul di Windows | CUDA/cuDNN tidak di PATH | pasang CUDA 12.6 + cuDNN 9.1, tambahkan `bin` ke `PATH` |
 | Frame hitam saat deteksi | HEVC 10-bit | memang dihindari: semua frame lewat pipe ffmpeg, bukan `cv2.VideoCapture` |

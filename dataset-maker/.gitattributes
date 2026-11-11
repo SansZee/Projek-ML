@@ -1,0 +1,29 @@
+# Baris baru selalu LF, di OS apa pun. Tanpa ini, Git for Windows mengubah
+# hook .githooks/pre-commit (skrip bash) menjadi CRLF dan hook gagal dengan
+# "bad interpreter".
+* text=auto eol=lf
+
+# Hook wajib LF dan tetap bisa dieksekusi di Linux/macOS.
+.githooks/* text eol=lf
+
+# Berkas biner tidak boleh disentuh konversi baris baru.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.mkv binary
+*.mp4 binary
+*.mov binary
+*.avi binary
+*.wav binary
+*.mp3 binary
+*.npy binary
+*.npz binary
+*.pt binary
+*.pth binary
+*.onnx binary
+*.zip binary
+*.pdf binary
+*.docx binary
+*.xlsx binary

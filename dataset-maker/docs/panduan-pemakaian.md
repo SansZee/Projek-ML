@@ -154,17 +154,14 @@ Di installer yang terbuka, centang **Desktop development with C++**, lalu
 jalankan ulang `uv sync`. Kalau tetap gagal, kerjakan tahap 04 di WSL2; sisa
 pipeline tetap bisa jalan di Windows.
 
-#### Windows: line ending dan path panjang
+#### Windows: line ending
 
-Git for Windows default menyimpan berkas dengan CRLF. Hook `pre-commit` adalah
-skrip bash, dan CRLF membuatnya gagal dengan `bad interpreter`. Setel sekali
-di folder projek:
+`.gitattributes` di repo sudah memaksa LF untuk semua berkas teks, jadi hook
+`pre-commit` (skrip bash) tidak berubah menjadi CRLF walaupun Git for Windows
+memakai `core.autocrlf=true`. Tidak ada yang perlu disetel.
 
-```powershell
-git config core.autocrlf false
-```
-
-Kalau repo sudah terlanjur di-clone dengan CRLF, checkout ulang:
+Kalau repo sempat di-clone **sebelum** berkas itu ada dan hook gagal dengan
+`bad interpreter`, checkout ulang sekali:
 
 ```powershell
 git rm --cached -r .
@@ -237,6 +234,7 @@ Berkas ini bukti bahwa hash config dan versi pustaka sama dengan koordinator.
 config.yaml            satu versi untuk seluruh tim
 films_registry.csv     daftar film_id unik global
 models.lock.yaml       catatan revisi bobot model
+.gitattributes         LF untuk teks, biner tidak dikonversi
 .githooks/pre-commit   pengaman: tolak berkas > 5 MB
 src/emosi/             pustaka bersama
 scripts/               skrip per tahap, dijalankan berurutan
