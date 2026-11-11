@@ -90,6 +90,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def audition_passed(films: pd.DataFrame) -> pd.Series:
+    """Film yang lolos audisi; tanpa kolom ``pass_audition`` semua dianggap lolos.
+
+    Film yang ditolak tidak pernah diproses 01–04, jadi tidak punya ``.npy``.
+    Pemeriksaan embedding harus melewatinya, bukan menggagalkan kiriman.
+    """
+    if "pass_audition" not in films.columns:
+        return pd.Series(True, index=films.index)
+    return films["pass_audition"].astype(str).str.lower().isin(("true", "1", "yes"))
+
+
 def pack_files(data_dir: Path) -> list[Path]:
     """Berkas yang ikut dalam kiriman.
 
@@ -134,7 +145,7 @@ def build_manifest(
         "packed_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "config_sha256": config_sha256,
         "uv_lock_sha256": uv_lock_sha256,
-        "films": sorted(films["film_id"].astype(str)),
+        "films": sorted(films.loc[audition_passed(films), "film_id"].astype(str)),
         "n_utterances": int(len(utterances)),
         "n_face_ok": n_face_ok,
     }
@@ -251,7 +262,8 @@ def load_contributor(entry: Path, *, owner: str | None = None) -> Contributor:
 
     embeddings: dict[str, np.ndarray] = {}
     film_rows: dict[str, int] = {}
-    for film_id in tables["films.csv"]["film_id"].astype(str):
+    films = tables["films.csv"]
+    for film_id in films.loc[audition_passed(films), "film_id"].astype(str):
         csv_key = root + f"data/faces/{film_id}.csv"
         npy_key = root + f"data/faces/{film_id}.npy"
         if npy_key not in tree:
@@ -415,6 +427,7 @@ def validate(
             )
 
         films = contributor.table("films.csv")
+        films = films[audition_passed(films)]
         faces = contributor.table("faces.csv")
         utterances = contributor.table("utterances.csv")
 
@@ -536,8 +549,8 @@ def merge_contributors(contributors: list[Contributor]) -> Merged:
         ignore_index=True,
     )
     dropped: list[str] = []
+    passed = audition_passed(films)
     if "pass_audition" in films.columns:
-        passed = films["pass_audition"].astype(str).str.lower().isin(("true", "1", "yes"))
         dropped = sorted(films.loc[~passed, "film_id"].astype(str))
         films = films[passed].reset_index(drop=True)
 

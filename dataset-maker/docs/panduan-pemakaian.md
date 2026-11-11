@@ -971,6 +971,32 @@ diredam antar frame supaya tidak goyang. `--no-faces` melewati bagian ini.
 (`ok`, `ada`, `film_tidak_ada`, `gagal`). Repo pelatihan membaca katalog ini,
 bukan folder media langsung.
 
+#### Serah terima media ke mesin latihan
+
+Sekali saja, setelah `10_cut.py` selesai untuk semua klip:
+
+1. Unggah **isi folder `media/`** (`clips/`, `audio/`, `faces/`) dan
+   `data/clips.csv` ke drive bersama, satu folder per pemilik:
+   `kiriman-media/<nama>/media/...` dan `<nama>/clips.csv`.
+2. Jangan lewat git. Ukurannya 3–6 GB untuk 3.000 klip; `.gitignore` dan hook
+   `pre-commit` memang menolaknya.
+3. Batas unggahan gratis (mis. Google Drive) biasanya 15 GB per akun, jadi
+   satu akun per anggota lebih aman daripada satu akun bersama.
+
+Mesin latihan menyusunnya kembali jadi satu tempat:
+
+```
+media/clips/<clip_id>.mp4
+media/audio/<clip_id>.wav
+media/faces/<clip_id>.mp4
+data/clips.csv
+```
+
+`clips.csv` memakai path relatif (`clips/...`, `audio/...`, `faces/...`)
+terhadap folder `media/`, jadi isinya tidak perlu diubah. Kalau beberapa
+anggota mengirim `clips.csv`, gabungkan barisnya: `clip_id` sama dengan
+`utterance_id` sehingga tidak bentrok.
+
 ### 8.3 `11_split.py` — tiga varian split
 
 ```bash
@@ -1058,9 +1084,17 @@ dulu — samakan config, lalu ulangi tahap yang terpengaruh (biasanya 03 dan 04)
 Jangan kirim `media/`, `clips/`, atau `audio/`; ukurannya besar dan bisa dibuat
 ulang di laptop pemilik film. Folder `kiriman/` sudah masuk `.gitignore`.
 
+Media punya jalur sendiri dan waktunya lain: setelah koordinator menjalankan
+`09_select.py`, pemilik film menjalankan `10_cut.py`, lalu mengunggah media ke
+drive bersama (§8.2). Jangan mencampurnya ke zip `--pack`.
+
 Koordinator tidak menempel `*.csv` mentah. Ia menjalankan
 `05_merge.py --from kiriman/`, yang memeriksa hash config, kelengkapan
 embedding, dan film ganda sebelum menulis `data/merged/`.
+
+Film dengan `pass_audition=false` tidak punya `.npy` (tahap 01–04 melewatinya).
+Itu bukan kiriman rusak: filmnya dibuang dari katalog dan tidak menghalangi
+`--pack` maupun penggabungan.
 
 Label **tidak** ikut zip di atas. `07_annotate.py` menulis
 `data/labels_<nama>.csv` setiap kali satu label diklik, dan berkas itulah yang

@@ -65,6 +65,10 @@ def run_pack(cfg: Config, owner: str, out: Path | None) -> int:
             return 1
 
     films = pd.read_csv(data_dir / "films.csv")
+    films = films.loc[merge.audition_passed(films)]
+    if films.empty:
+        print("tidak ada film yang lolos audisi; tidak ada yang bisa dibungkus.")
+        return 1
     missing = [
         film
         for film in films["film_id"].astype(str)

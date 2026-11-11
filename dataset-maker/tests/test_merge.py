@@ -29,6 +29,7 @@ def write_bundle(
     *,
     config_sha: str = "cfg",
     rejected: tuple[str, ...] = (),
+    skip_embedding: tuple[str, ...] = (),
     corrupt_npy: str | None = None,
     skip_face: str | None = None,
 ) -> Path:
@@ -87,7 +88,8 @@ def write_bundle(
         matrix[0, 0] = 1.0
         if rows > 1:
             matrix[1, 1] = 1.0
-        np.save(data / "faces" / f"{film_id}.npy", matrix)
+        if film_id not in skip_embedding:
+            np.save(data / "faces" / f"{film_id}.npy", matrix)
         per_film = [row for row in face_rows if row["film_id"] == film_id]
         pd.DataFrame(per_film, columns=FACE_COLUMNS).to_csv(
             data / "faces" / f"{film_id}.csv", index=False
@@ -236,6 +238,34 @@ def test_rejected_film_is_dropped_with_its_rows(tmp_path):
     assert list(merged.films["film_id"]) == ["AAA01"]
     assert merged.dropped == ["BBB02"]
     assert set(merged.utterances["film_id"]) == {"AAA01"}
+    assert set(merged.embeddings) == {"AAA01"}
+
+
+def test_rejected_film_without_embedding_does_not_block_pack_or_merge(tmp_path):
+    root = write_bundle(
+        tmp_path / "budi",
+        "budi",
+        ["AAA01", "BBB02"],
+        rejected=("BBB02",),
+        skip_embedding=("BBB02",),
+    )
+    manifest = merge.build_manifest(
+        owner="budi",
+        data_dir=root / "data",
+        config_sha256="cfg",
+        uv_lock_sha256="lock",
+    )
+    assert manifest["films"] == ["AAA01"]
+
+    contributor = merge.load_contributor(root)
+    assert set(contributor.embeddings) == {"AAA01"}
+
+    problems = merge.validate([contributor], config_sha256="cfg", uv_lock_sha256="lock")
+    assert not merge.has_errors(problems), problems
+
+    merged = merge.merge_contributors([contributor])
+    assert list(merged.films["film_id"]) == ["AAA01"]
+    assert merged.dropped == ["BBB02"]
     assert set(merged.embeddings) == {"AAA01"}
 
 
