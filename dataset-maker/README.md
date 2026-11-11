@@ -11,6 +11,9 @@ dan hanya membaca `clips.csv` yang dihasilkan di sini.
 - `uv` (>= 0.5)
 - `ffmpeg` dan `ffprobe` di `PATH`
 - Python 3.11 (dipatok di `.python-version`, uv yang mengurus unduhannya)
+- Windows: instalasi lewat PowerShell/winget, lihat
+  `docs/panduan-pemakaian.md` §2 (Build Tools untuk `insightface`, line ending,
+  dan CUDA opsional)
 
 ## Mulai
 

@@ -5,6 +5,8 @@ bisa digabung tanpa penjelasan tambahan.
 
 ## 1. Pasang uv
 
+Linux, macOS, WSL2:
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
@@ -12,8 +14,12 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 Windows (PowerShell):
 
 ```powershell
+winget install --id=astral-sh.uv -e
+# atau installer resmi:
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
+
+Tutup dan buka ulang PowerShell setelah instalasi supaya `uv` masuk `PATH`.
 
 ## 2. Pasang ffmpeg
 
@@ -28,11 +34,22 @@ sudo apt install ffmpeg
 brew install ffmpeg
 ```
 
-Cek:
+Windows (PowerShell):
 
-```bash
-ffmpeg -version | head -1
+```powershell
+winget install --id=Gyan.FFmpeg -e
 ```
+
+Cek **keduanya**; sebagian paket ffmpeg hanya membawa `ffmpeg` tanpa
+`ffprobe`:
+
+```powershell
+ffmpeg -version
+ffprobe -version
+```
+
+Kalau perintah masih "tidak dikenal", tutup dan buka ulang PowerShell — folder
+`bin` baru masuk `PATH` setelah shell dijalankan ulang.
 
 ## 3. Sinkronkan projek
 
@@ -45,11 +62,14 @@ uv sync --locked
 ulang `uv.lock`, sehingga empat orang bisa punya empat environment berbeda
 tanpa menyadarinya.
 
-Untuk tahap ASR dan pelabelan:
+Untuk tahap data, wajah, dan pelabelan:
 
 ```bash
-uv sync --locked --extra asr --extra label
+uv sync --locked --extra asr --extra face --extra label
 ```
+
+Sebut semua extra yang dipakai: `uv` hanya mempertahankan extra yang disebut.
+Di Windows, `--extra face` mengompilasi `insightface`; lihat bagian 5.
 
 ## 4. CUDA dan PyTorch
 
@@ -70,17 +90,50 @@ uv lock && uv sync --locked --extra ml
 `python -c "import torch; print(torch.cuda.is_available())"` menghasilkan
 `False`. Itu berarti yang terpasang wheel CPU.
 
-## 5. Windows: insightface
+## 5. Windows: insightface dan GPU
 
-Tahap `04_face_screen.py` membutuhkan `insightface` saat kompilasi. Di Windows
-ini sumber kegagalan paling sering.
+Tahap `04_face_screen.py` membutuhkan `insightface`, yang tidak punya wheel
+Windows dan harus dikompilasi. Ini sumber kegagalan paling sering.
 
-Urutan pilihan:
+**Native Windows.** Sekali saja per laptop:
 
-1. **WSL2** (paling dekat dengan setup Linux, disarankan).
-2. Python 3.11 dari python.org + Visual C++ Build Tools, lalu
-   `uv sync --extra face`.
-3. Docker (lihat bawah).
+```powershell
+winget install --id=Microsoft.VisualStudio.2022.BuildTools -e
+```
+
+Di installer yang terbuka, centang **Desktop development with C++**, lalu:
+
+```powershell
+uv sync --locked --extra asr --extra face --extra label
+```
+
+**Kalau kompilasi tetap gagal**, pindah ke WSL2 (Ubuntu 24.04). Di sana semua
+perintah sama dengan Linux, media diakses lewat `/mnt/d/Film`, dan GPU memakai
+driver NVIDIA untuk WSL. Docker (bagian 6) adalah pilihan terakhir.
+
+**GPU di Windows.** Paket `nvidia-*-cu12` di `pyproject.toml` hanya dipasang di
+Linux (`sys_platform == 'linux'`). Di Windows, `onnxruntime-gpu` mencari CUDA
+dan cuDNN yang dipasang sendiri:
+
+1. driver NVIDIA terbaru;
+2. CUDA Toolkit **12.6** dan cuDNN **9.1** untuk Windows;
+3. folder `bin` keduanya masuk `PATH`;
+4. cek:
+
+```powershell
+uv run python -c "import onnxruntime as ort; print(ort.get_available_providers())"
+```
+
+Hasil yang benar memuat `CUDAExecutionProvider`. Tanpa itu, tahap 04 tetap
+jalan di CPU: 1–2 jam per film, bukan 5–10 menit.
+
+**Line ending.** Git for Windows default memakai CRLF, sedangkan hook
+`.githooks/pre-commit` adalah skrip bash. Setel di folder projek:
+
+```powershell
+git config core.autocrlf false
+git config core.longpaths true
+```
 
 ## 6. Docker (opsional, untuk tim dengan OS campur)
 
@@ -125,4 +178,9 @@ kamu serahkan ke koordinator.
 | `CascadeClassifier` kosong / `cv2` error | OpenCV 5 terpasang (menghapus `CascadeClassifier`) | `uv sync --locked --extra face`; pin `<5` sudah ada di `pyproject.toml` |
 | `provider onnxruntime: CPUExecutionProvider` | libcublas/libcudnn/cudart tidak ditemukan | `uv sync --locked --extra face`, cek `nvidia-smi` |
 | `ffmpeg tidak ditemukan` | ffmpeg tidak di PATH | pasang, lalu buka ulang shell |
+| `winget: command not found` | Windows 10 lama | perbarui App Installer dari Microsoft Store, atau pasang manual |
+| `ffmpeg`/`ffprobe` masih tidak dikenal setelah winget | PATH belum dimuat | tutup dan buka ulang PowerShell |
+| `bad interpreter: /usr/bin/env bash^M` | berkas di-checkout dengan CRLF | `git config core.autocrlf false`, lalu checkout ulang |
+| `Microsoft Visual C++ 14.0 required` saat `--extra face` | Build Tools belum ada | `winget install --id=Microsoft.VisualStudio.2022.BuildTools -e`, centang Desktop development with C++ |
+| `CUDAExecutionProvider` tidak muncul di Windows | CUDA/cuDNN tidak di PATH | pasang CUDA 12.6 + cuDNN 9.1, tambahkan `bin` ke `PATH` |
 | Frame hitam saat deteksi | HEVC 10-bit | memang dihindari: semua frame lewat pipe ffmpeg, bukan `cv2.VideoCapture` |

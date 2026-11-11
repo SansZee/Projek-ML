@@ -54,27 +54,61 @@ kerja GPU, jadi jangan menunda ke hari terakhir.
 
 ## 2. Instalasi
 
-### 2.1 Pasang uv dan ffmpeg
+Pilih satu jalur dan jangan campur perintahnya: **PowerShell** untuk Windows,
+**bash/zsh** untuk Linux, macOS, atau WSL2.
+
+### 2.1 Pasang uv, ffmpeg, dan git
+
+**Linux / macOS / WSL2**
 
 ```bash
-# uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# ffmpeg (Arch)
-sudo pacman -S ffmpeg
-# Ubuntu/Debian
-sudo apt install ffmpeg
+# ffmpeg
+sudo pacman -S ffmpeg          # Arch
+sudo apt install ffmpeg        # Ubuntu/Debian
+brew install ffmpeg            # macOS
 ```
 
-Windows: pakai WSL2. Instalasi native bisa, tetapi `insightface` sering gagal
-dikompilasi. Detailnya ada di `docs/environment.md`.
+**Windows (PowerShell, bukan `cmd`)**
+
+```powershell
+winget install --id=astral-sh.uv -e
+winget install --id=Gyan.FFmpeg -e
+winget install --id=Git.Git -e
+```
+
+Tutup lalu buka lagi PowerShell setelah instalasi. `winget` menaruh `uv` di
+`%USERPROFILE%\.local\bin` dan ffmpeg di folder baru yang masuk `PATH`; tanpa
+restart, `uv` atau `ffmpeg` masih "tidak dikenal".
+
+Kalau `winget` tidak tersedia (Windows 10 lama), perbarui **App Installer**
+dari Microsoft Store, atau pakai installer manual dari situs uv dan
+[gyan.dev](https://www.gyan.dev/ffmpeg/builds/) lalu tambahkan folder `bin` ke
+`PATH`.
 
 Cek:
 
-```bash
-ffmpeg -version | head -1
+```powershell
+ffmpeg -version
+ffprobe -version
 uv --version
+git --version
 ```
+
+`ffprobe` harus ikut; sebagian paket ffmpeg hanya membawa `ffmpeg`.
+
+Sekali saja, sebelum meng-clone: izinkan path panjang. Folder projek yang
+berlapis (mis. `C:\kuliah\semester7\ml\projek\dataset-maker`) bisa melewati
+batas 260 karakter Windows.
+
+```powershell
+git config --global core.longpaths true
+```
+
+> **Jangan taruh projek di folder OneDrive.** Sinkronisasi saat ffmpeg menulis
+> ribuan frame memperlambat semuanya dan kadang mengunci berkas di tengah
+> proses. Pakai `C:\kuliah\dataset-maker` atau serupa.
 
 ### 2.2 Sinkronkan projek
 
@@ -87,6 +121,9 @@ uv sync --locked
 `--locked` wajib. Tanpa itu uv boleh menulis ulang `uv.lock`, dan empat laptop
 bisa punya environment berbeda tanpa ada yang sadar.
 
+Python tidak perlu dipasang sendiri: `.python-version` mematok 3.11 dan uv
+mengunduhnya.
+
 Pasang extra sesuai tahap yang kamu kerjakan:
 
 ```bash
@@ -97,8 +134,60 @@ uv sync --locked --extra asr --extra face
 uv sync --locked --extra asr --extra face --extra label
 ```
 
-Extra `face` menarik `insightface`, `onnxruntime-gpu`, dan pustaka CUDA.
-Ukurannya beberapa ratus MB. Di Windows, gunakan WSL2.
+Sebut **semua** extra yang dipakai dalam satu perintah. `uv` hanya
+mempertahankan extra yang disebut, jadi `--extra label` saja akan mencabut
+`face` dan `asr`.
+
+Extra `face` menarik `insightface`, `onnxruntime-gpu`, dan pustaka CUDA,
+ukurannya beberapa ratus MB.
+
+#### Windows: mengompilasi `insightface`
+
+`insightface` tidak menyediakan wheel Windows, jadi `--extra face` butuh
+compiler C++. Sekali saja per laptop:
+
+```powershell
+winget install --id=Microsoft.VisualStudio.2022.BuildTools -e
+```
+
+Di installer yang terbuka, centang **Desktop development with C++**, lalu
+jalankan ulang `uv sync`. Kalau tetap gagal, kerjakan tahap 04 di WSL2; sisa
+pipeline tetap bisa jalan di Windows.
+
+#### Windows: line ending dan path panjang
+
+Git for Windows default menyimpan berkas dengan CRLF. Hook `pre-commit` adalah
+skrip bash, dan CRLF membuatnya gagal dengan `bad interpreter`. Setel sekali
+di folder projek:
+
+```powershell
+git config core.autocrlf false
+```
+
+Kalau repo sudah terlanjur di-clone dengan CRLF, checkout ulang:
+
+```powershell
+git rm --cached -r .
+git reset --hard
+```
+
+#### Windows: GPU untuk tahap 04
+
+Paket CUDA di `pyproject.toml` sengaja hanya untuk Linux
+(`sys_platform == 'linux'`). Di Windows, `onnxruntime-gpu` memakai CUDA dan
+cuDNN yang dipasang sendiri:
+
+1. pasang driver NVIDIA terbaru;
+2. pasang **CUDA Toolkit 12.6** dan **cuDNN 9.1 untuk Windows**;
+3. pastikan folder `bin` CUDA dan `bin` cuDNN ada di `PATH`;
+4. cek:
+
+```powershell
+uv run python -c "import onnxruntime as ort; print(ort.get_available_providers())"
+```
+
+Hasil yang benar memuat `CUDAExecutionProvider`. Kalau tidak, tahap 04 tetap
+jalan di CPU, tetapi 1–2 jam per film, bukan 5–10 menit.
 
 Terakhir, pasang pengaman git. Satu perintah, sekali saja per laptop:
 
@@ -116,6 +205,13 @@ history. Kalau suatu saat memang perlu berkas besar:
 GIT_MAX_FILE_MB=20 git commit -m "..."
 ```
 
+Di PowerShell:
+
+```powershell
+$env:GIT_MAX_FILE_MB = 20
+git commit -m "..."
+```
+
 ### 2.3 Verifikasi environment
 
 ```bash
@@ -127,8 +223,8 @@ Yang harus terlihat:
 - `ffmpeg` ada;
 - `uv.lock` ada (bukan `TIDAK ADA`);
 - `config` menampilkan 16 karakter hash;
-- kalau GPU dipakai, `torch cuda=True` (setelah extra `ml`) atau setidaknya
-  provider `CUDAExecutionProvider` saat `04_face_screen.py` dijalankan.
+- kalau GPU dipakai, provider `CUDAExecutionProvider` muncul saat
+  `04_face_screen.py` dijalankan (Windows: lihat bagian GPU di atas).
 
 Berkas `environment.lock.json` yang dihasilkan **diserahkan** bersama data.
 Berkas ini bukti bahwa hash config dan versi pustaka sama dengan koordinator.
@@ -985,7 +1081,7 @@ menggabungkan berdasarkan kolom `annotator`.
 | `01_asr.py` sangat lambat | GPU tidak terpakai | cek `torch.cuda.is_available()`; lihat `docs/environment.md` |
 | `provider onnxruntime: CPUExecutionProvider` | pustaka CUDA tidak lengkap | `uv sync --locked --extra face`; cek `nvidia-smi` |
 | `CascadeClassifier` kosong / `cv2` error | OpenCV 5 terpasang | `uv sync --locked --extra face` (pin `<5` sudah ada); jangan pasang opencv sendiri |
-| `insightface` gagal dikompilasi (Windows) | butuh compiler C++ | pakai WSL2 |
+| `insightface` gagal dikompilasi (Windows) | butuh compiler C++ | pasang Build Tools (§2.2); kalau tetap gagal, WSL2 |
 | `faces.csv` kosong | film gelap / wajah jarang / frame gagal didekode | cek `faces_meta.json`, jalankan `--scenes 2` untuk uji |
 | `srt_check.csv` `tidak_selaras` | subtitle bukan untuk film itu | cari SRT yang benar sebelum lanjut |
 | `film_id` otomatis (`FLM…`) | registri tidak cocok | perbaiki `films_registry.csv`, jalankan `00_inventory.py --force` |
