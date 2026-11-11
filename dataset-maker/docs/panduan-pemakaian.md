@@ -6,23 +6,24 @@ bukan hanya untuk satu mesin.
 
 Status tahap per tulisan ini:
 
-| Tahap | Skrip | Status | Keterangan |
+| Skrip | Status | Keterangan |
 |---|---|---|---|
-| 1 | `00_inventory.py` | **tersedia** | audisi film, `films.csv` |
-| 2 | `01_asr.py` | **tersedia** | transkrip + timestamp kata |
-| 3 | `02_scenes.py` | **tersedia** | adegan anotasi 2–3 menit |
-| 4 | `03_utterances.py` | **tersedia** | ujaran 2–10 detik |
-| 5 | `04_face_screen.py` | **tersedia** | face ratio, embedding, klaster aktor |
-| 6 | `05_qc.py` | belum | kolam kandidat `pool.csv` |
-| 7 | `06_annotate.py` | belum | aplikasi pelabelan |
-| 8 | `07_agree.py` | belum | kappa + adjudikasi |
-| 9 | `08_select.py` | belum | seleksi 600/kelas |
-| 10 | `09_cut.py` | belum | potong klip, audio, wajah |
-| 11 | `10_split.py` | belum | split A/B/C |
-| 12 | `11_audit.py` + `12_stats.py` | belum | audit dan statistik |
+| `00_inventory.py` | **tersedia** | audisi film, `films.csv` |
+| `01_asr.py` | **tersedia** | transkrip + timestamp kata |
+| `02_scenes.py` | **tersedia** | adegan anotasi 2–3 menit |
+| `03_utterances.py` | **tersedia** | ujaran 2–10 detik |
+| `04_face_screen.py` | **tersedia** | face ratio, embedding, klaster aktor |
+| `05_merge.py` | **tersedia** | bungkus kiriman, katalog gabungan |
+| `06_qc.py` | **tersedia** | kolam kandidat `pool.csv` + rencana adegan |
+| `07_annotate.py` | **tersedia** | penugasan, preview, aplikasi pelabelan |
+| `08_agree.py` | **tersedia** | kappa + adjudikasi |
+| `09_select.py` | **tersedia** | seleksi 600/kelas |
+| `10_cut.py` | **tersedia** | potong klip, audio, wajah |
+| `11_split.py` | **tersedia** | split A/B/C |
+| `12_audit.py` + `13_stats.py` | **tersedia** | audit prediksi dan dataset card |
 
-Tahap yang belum tersedia tetap dijelaskan di bagian akhir supaya urutan
-kerjanya sudah jelas. Jangan menjalankan perintah untuk skrip yang belum ada.
+Semua skrip di atas tersedia. Jalankan berurutan; setiap tahap membaca
+keluaran tahap sebelumnya.
 
 ---
 
@@ -89,7 +90,7 @@ bisa punya environment berbeda tanpa ada yang sadar.
 Pasang extra sesuai tahap yang kamu kerjakan:
 
 ```bash
-# data + wajah (tahap 00–05)
+# data + wajah (skrip 00–05)
 uv sync --locked --extra asr --extra face
 
 # kalau nanti melabeli lewat aplikasi
@@ -144,8 +145,10 @@ models.lock.yaml       catatan revisi bobot model
 src/emosi/             pustaka bersama
 scripts/               skrip per tahap, dijalankan berurutan
 data/                  keluaran tabular (gitignored)
-media/                 audio, klip, wajah (gitignored)
-clips/                 klip akhir hasil potong (gitignored)
+media/preview/         preview adegan untuk pelabelan (gitignored)
+media/clips/           klip 720p hasil potong (gitignored)
+media/audio/           audio 16 kHz mono (gitignored)
+media/faces/           wajah 224×224 hasil potong (gitignored)
 kiriman/               zip serah-terima antar-anggota (gitignored)
 docs/                  panduan dan catatan koordinasi
 ```
@@ -193,6 +196,9 @@ uv run python scripts/03_utterances.py
 
 # 5. wajah + embedding + klaster aktor
 uv run python scripts/04_face_screen.py
+
+# 6. bungkus hasil sendiri jadi satu zip kiriman
+uv run python scripts/05_merge.py --pack <namamu>
 ```
 
 Skrip 01–04 punya `--film <film_id>` untuk satu film dan `--force` untuk
@@ -350,17 +356,196 @@ Hasilnya di `data/uji/`, aman dihapus. Kalau `provider onnxruntime` yang
 tercetak `CPUExecutionProvider`, GPU tidak terpakai — lihat bagian
 troubleshooting.
 
+### 4.6 `05_merge.py` — bungkus kiriman sendiri
+
+```bash
+uv run python scripts/05_merge.py --pack kesan
+```
+
+Membungkus hasil tahap 00–04 menjadi satu zip di
+`kiriman/<nama>-<tanggal>.zip`. Isinya tabel, embedding wajah, dan
+`handover.json` (pemilik, waktu, hash `config.yaml` dan `uv.lock`) — sekitar
+4 MB untuk dua film, sekitar 40 MB untuk delapan film. Film, audio, dan klip
+tidak pernah ikut.
+
+Langkah ini wajib sebelum mengirim apa pun. Kiriman manual hampir selalu
+kehilangan satu hal: `.npy`, `actors.csv`, atau `handover.json`.
+
+Kalau ada film yang belum punya `faces/<film_id>.npy`, skrip berhenti dan
+menyebut film mana yang belum selesai.
+
 ---
 
-## 5. Membaca keluaran
+## 5. Menggabungkan kiriman (koordinator)
 
-### 5.1 `films.csv`
+Dijalankan sekali oleh satu orang, di laptop yang menyimpan katalog. Anggota
+tidak menjalankan bagian ini.
+
+```bash
+uv run python scripts/05_merge.py --from kiriman/
+```
+
+Isi `kiriman/` boleh zip semuanya, atau folder hasil ekstrak; keduanya
+dikenali, dan kiriman yang sama tidak dihitung dua kali.
+
+Yang dilakukan skrip:
+
+1. membaca setiap kiriman, lalu mencocokkan hash `config.yaml` dengan config
+   lokal;
+2. memeriksa kelengkapan: `film_id` unik, `utterance_id` unik, jumlah baris
+   `.npy` sama dengan `faces/<film_id>.csv`, dan setiap ujaran punya baris
+   wajah;
+3. membuang film yang `pass_audition = False`;
+4. menulis katalog gabungan ke `data/merged/`;
+5. membuat `merge_report.md` dan `merge_meta.json`.
+
+Keluaran:
+
+```
+data/merged/
+  films.csv          films.csv + kolom owner, tanpa kolom path
+  utterances.csv
+  faces.csv
+  actors.csv
+  scenes.csv
+  reject_log.csv
+  faces/<film_id>.csv
+  faces/<film_id>.npy
+  merge_report.md
+  merge_meta.json
+```
+
+Kolom `path` dan `srt_path` dibuang karena hanya berarti di laptop pemilik
+film; penggantinya `owner`. Setiap laptop menerjemahkan `film_id` ke path-nya
+sendiri lewat `data/films.csv` lokal, jadi berkas lokal tidak pernah ditimpa.
+
+### 5.1 Pemeriksaan yang menggagalkan penggabungan
+
+Kalau ada satu error saja, **tidak ada berkas yang ditulis**, dan
+`data/merged/` yang lama tidak tersentuh.
+
+| Pemeriksaan | Kalau gagal |
+|---|---|
+| hash `config.yaml` berbeda | berhenti — samakan config, lalu kirim ulang |
+| `film_id` datang dari dua anggota | berhenti — atau `--keep <nama>` |
+| `utterance_id` ganda | berhenti |
+| `.npy` tidak sama dengan baris `faces/<film_id>.csv` | berhenti |
+| ujaran tanpa baris wajah | berhenti — tahap 04 belum selesai |
+| `uv.lock` berbeda | peringatan |
+| embedding dibuat dengan config lama | peringatan |
+
+Film yang sama dari dua orang adalah kesalahan paling mahal: dataset membengkak
+dan film itu bisa masuk train dan test sekaligus. Karena itu defaultnya
+berhenti, bukan memilih sendiri.
+
+### 5.2 Film ganda
+
+```bash
+uv run python scripts/05_merge.py --from kiriman/ --keep budi
+```
+
+Dipilih hanya setelah kamu yakin kiriman siapa yang benar. Kalau film ganda
+tidak melibatkan `budi`, penggabungan tetap berhenti.
+
+### 5.3 Membaca `merge_report.md`
+
+Isinya ringkasan per kontributor, daftar film di katalog, film yang tidak lolos
+audisi, hasil pemeriksaan, dan **kandidat aktor lintas film**.
+
+Bagian terakhir yang perlu perhatian. Ia mendaftar pasangan `actor_key` dari
+film berbeda yang wajahnya mirip. Pada dua film pilot, metodenya menemukan satu
+pasangan berjarak 0,215 — Rachel McAdams di About Time dan The Notebook. Setelah
+diperiksa manual, beri `actor_label` yang **persis sama** di kedua baris; kalau
+tidak, split C akan bocor.
+
+Kandidat hanyalah usulan: jarak 0,4 belum tentu orang yang sama, dan aktor yang
+sama dengan tata rias berbeda bisa berjarak lebih jauh.
+
+### 5.4 Menjalankan ulang
+
+`data/merged/` selalu ditulis ulang dari nol, jadi jalankan lagi setiap ada
+kiriman baru. Yang lama diganti, bukan ditambah, sehingga tidak ada film yang
+terhitung dua kali.
+
+### 5.5 `06_qc.py` — kolam kandidat dan rencana adegan
+
+```bash
+uv run python scripts/06_qc.py
+```
+
+Menyaring `data/merged/` menjadi **`data/pool.csv`**. Tahap ini tidak membuka
+media sama sekali: `face_ratio` sudah diukur tahap 04, `snr_db` dan `clip_ratio`
+sudah diukur tahap 00 per film.
+
+| Pemeriksaan | Ambang | Tingkat |
+|---|---|---|
+| teks tidak kosong | — | ujaran |
+| bukan lirik | tanpa `#`, `♪`, `♫` | ujaran |
+| `n_words` | ≥ `qc.min_words` (2) | ujaran |
+| `face_ratio` | ≥ `qc.face_ratio_min` (0,50) | ujaran |
+| `snr_db` | ≥ `qc.snr_min_db` (15) | film |
+| `clip_ratio` | ≤ `qc.clip_ratio_max` (0,01) | film |
+
+Ambang wajah di sini lebih longgar daripada tahap 04 (0,60). Tahap 04 menyaring
+cepat supaya embedding tidak dihitung dari frame buruk; tahap 06 memutuskan apa
+yang benar-benar dilabeli, dan wajah di separuh frame masih cukup untuk dinilai
+manusia.
+
+**Rencana adegan.** Pelabelan berjalan per adegan utuh, bukan per klip lepas,
+jadi yang dibatasi adalah adegan yang diambil. Batasnya diturunkan dari
+`selection`: satu film tidak boleh menyumbang lebih dari 15% tiap kelas, jadi
+`600 × 0,15 × 5 = 450` ujaran per film. Film horor/thriller mendapat 1,5×
+(675), karena di situ kelas takut dan marah paling banyak; tanpa kelonggaran
+itu kuota dua kelas tersebut tidak akan terpenuhi.
+
+Adegan dipilih dengan langkah tetap sepanjang film, supaya tidak menumpuk di
+babak pertama. Satu adegan bisa melewati batas sedikit: memotong adegan di
+tengah menghilangkan konteks yang dibutuhkan anotator.
+
+Keluaran:
+
+```
+data/pool.csv          satu baris per ujaran + qc_pass, qc_reason, label_plan
+data/pool_scenes.csv   adegan terpilih dan jumlah ujaran layaknya
+data/qc_report.md      ringkasan ambang, per film, dan alasan gagal
+data/qc_meta.json      ambang, batas, hash config
+```
+
+`label_plan = True` berarti ujaran itu lolos QC **dan** adeganya terpilih. Di
+aplikasi pelabelan adegan tetap diputar utuh, tetapi ujaran yang gagal QC tidak
+perlu diklik karena tidak akan lolos seleksi. Ujaran yang lolos QC tetapi
+adegannya tidak terpilih tetap ada di `pool.csv`, jadi rencana bisa diubah
+tanpa mengulang tahap 05.
+
+Opsi:
+
+```bash
+uv run python scripts/06_qc.py --cap 300        # batas sama untuk semua film
+uv run python scripts/06_qc.py --no-cap         # rencanakan semua adegan
+uv run python scripts/06_qc.py --rare-multiplier 2.0
+```
+
+Hasil pada tiga film (About Time, 500 Days of Summer, The Notebook): 3.459
+ujaran diperiksa, 2.608 lolos QC (75%), 1.373 masuk rencana label dalam 66
+dari 133 adegan (sekitar 165 menit tontonan), dan 1.246 di antaranya punya
+embedding. Yang paling banyak menggugurkan adalah `wajah_jarang` (642),
+`kata_sedikit` (174), dan `lirik` (132 — semuanya dari 500 Days of Summer,
+yang banyak menyisipkan lagu).
+
+`data/pool.csv` dan `data/pool_scenes.csv` berada di luar `data/merged/`, jadi
+tidak ikut terhapus saat penggabungan diulang.
+
+---
+
+## 6. Membaca keluaran
+
+### 6.1 `films.csv`
 
 Satu baris per film. Kolom penting: `film_id`, `title`, `year`, `genre`,
 `duration_s`, `fps`, `srt_cues`, `wpm`, `snr_db`, `face_ratio`,
 `pass_audition`, `reject_reason`.
 
-### 5.2 `utterances.csv`
+### 6.2 `utterances.csv`
 
 Satu baris per ujaran:
 
@@ -375,113 +560,423 @@ Satu baris per ujaran:
 | `timing` | `asr` (waktu dari kata Whisper) atau `cue` (mundur ke waktu subtitle) |
 | `speaker` | nama pembicara kalau subtitle memberinya |
 
-### 5.3 `faces.csv`
+### 6.3 `faces.csv`
 
 Satu baris per ujaran, urutan kolom dijelaskan di bagian 4.5. Baris dengan
 `emb_frames = 0` tetap ada; artinya ujaran itu tidak punya wajah yang bisa
 dipakai untuk split C.
 
-### 5.4 `actors.csv`
+### 6.4 `actors.csv`
 
 Daftar klaster aktor per film. `actor_label` diisi manual; `actor_key` tidak
 boleh diubah karena dipakai `faces.csv`.
 
+### 6.5 `pool.csv`
+
+Hasil `06_qc.py`: satu baris per ujaran dari semua film, sudah digabung dengan
+`face_ratio`, `snr_db`, dan `clip_ratio`. Kolom yang menentukan:
+
+| Kolom | Arti |
+|---|---|
+| `qc_pass` | `True` kalau lolos semua ambang bagian 5.5 |
+| `qc_reason` | alasan gagal, dipisah `;`, mis. `wajah_jarang:0.31;kata_sedikit:1` |
+| `label_plan` | `True` kalau perlu dilabeli (lolos QC dan adeganya terpilih) |
+| `emb_frames` | `0` berarti tidak ada embedding; masih bisa dipakai untuk audio/teks |
+
+`pool_scenes.csv` memuat satu baris per adegan: `n_qc_pass` (ujaran layak di
+adegan itu) dan `selected` (masuk tugas pelabelan). Aplikasi pelabelan membaca
+kedua berkas ini, bukan `data/merged/`.
+
+### 6.6 Keluaran seleksi, split, dan laporan
+
+Dijelaskan cara membuatnya di bagian 8; arti berkasnya:
+
+| Berkas | Isi |
+|---|---|
+| `assignments.csv` | tugas per anotator (`milik`, `gold`, `silang`) |
+| `labels_<nama>.csv` | label mentah per anotator, satu baris per klik |
+| `labels_final.csv` | label akhir setelah mayoritas/adjudikasi |
+| `adjudication.csv` | ujaran tanpa mayoritas + kolom `decision` |
+| `selected.csv` | klip terpilih + `clip_id`, label, durasi, aktor |
+| `clips.csv` | katalog media: path relatif, ukuran, status potong |
+| `splits.csv` | `split_A`, `split_B`, `split_C` untuk tiap klip |
+| `disagreement.csv` | label vs prediksi model, urut skor |
+| `dataset_card.md` | ringkasan dataset untuk lampiran laporan |
+
 ---
 
-## 6. Tahap pelabelan (belum tersedia)
+## 7. Pelabelan
 
-Rencana kerjanya, supaya kamu bisa menyiapkan waktu:
+Pelabelan berjalan **lokal di laptop pemilik film**, bukan di-deploy ke
+internet. Aplikasi terpusat harus bisa membaca film, dan itu berarti memindah
+ratusan GB ke satu mesin. Yang berpindah hanya tabel 1 MB, preview adegan
+beberapa puluh MB untuk tukar silang, dan label 300 KB per orang.
 
-1. `05_qc.py` menyaring `utterances.csv` + `faces.csv` menjadi `pool.csv`:
-   durasi, jumlah kata, SNR, face ratio, dan klip yang rusak.
-2. `06_annotate.py` menampilkan satu adegan utuh beserta semua ujarannya.
-   Anotator memilih satu dari lima kelas: **senang, sedih, marah, takut,
-   netral**, atau `ambigu` / `tidak_layak`, dengan keyakinan 1–5.
-3. Setiap orang melabeli **150 ujaran tukar silang** dengan anggota lain.
-   Tanpa overlap, kappa tidak bisa dihitung.
-4. `07_agree.py` menghitung kappa dan menghasilkan `labels_final.csv`.
+Tiga peran:
+
+| Siapa | Perintah | Kapan |
+|---|---|---|
+| koordinator | `--assign` | sekali, setelah `06_qc.py` |
+| pemilik film | `--prepare`, `--prepare --zip` | sebelum sesi |
+| anotator | `streamlit run` | saat sesi |
+
+### 7.1 Membagi tugas
+
+```bash
+uv run python scripts/07_annotate.py --assign --people kesan,budi,ani,dina
+```
+
+Menulis `data/assignments.csv` dengan tiga jenis tugas:
+
+| Peran | Isi | Tujuan |
+|---|---|---|
+| `milik` | semua adegan terpilih di film yang ada di laptop sendiri | mengisi kuota |
+| `gold` | dua adegan yang dinilai **semua** orang | kappa global |
+| `silang` | 150 ujaran milik orang lain | kappa antarpasangan |
+
+Adegan gold dipilih yang cukup berisi (≥ 8 ujaran) dan, kalau ada, dari genre
+langka. Tukar silang memakai **satu set per pemilik film**: semua orang yang
+menilai film itu memakai 150 ujaran yang sama, jadi kappa bisa dibandingkan
+berpasangan.
+
+Ujaran yang sama tidak muncul dua kali untuk satu anotator: prioritasnya
+`milik` → `gold` → `silang`.
+
+Hasil pada pilot (tiga film, semuanya di laptop kesan):
+
+| Anotator | milik | gold | silang | total |
+|---|---:|---:|---:|---:|
+| kesan | 1.373 | 0 | 0 | 1.373 |
+| budi | 0 | 54 | 150 | 204 |
+| ani | 0 | 54 | 150 | 204 |
+| dina | 0 | 54 | 150 | 204 |
+
+Kesan tidak punya tugas silang karena tidak ada film orang lain di katalog.
+Kappa tetap bisa dihitung: gold set dinilai semua orang, dan ketiga penilai
+lain memakai set 150 ujaran yang sama dari film kesan.
+
+Kirim `data/pool.csv`, `data/pool_scenes.csv`, dan `data/assignments.csv` ke
+semua anotator. Ketiganya di bawah 1 MB.
+
+### 7.2 Memotong preview adegan
+
+Browser tidak bisa memutar `.mkv`, jadi tiap adegan dipotong jadi mp4 480p
+dengan audio tetap ada.
+
+```bash
+uv run python scripts/07_annotate.py --prepare
+```
+
+Memotong semua adegan yang dibutuhkan siapa pun dan filmnya ada di laptop ini.
+Satu adegan 2–3 menit menjadi 5–6 MB, jadi 66 adegan pilot sekitar 370 MB.
+
+Kalau hanya ingin adegan milik sendiri:
+
+```bash
+uv run python scripts/07_annotate.py --prepare --annotator kesan
+```
+
+Untuk mengirim preview adegan yang dibutuhkan orang lain (gold dan tukar
+silang):
+
+```bash
+uv run python scripts/07_annotate.py --prepare --zip budi
+```
+
+Hasilnya `kiriman/preview-untuk-budi-<tanggal>.zip`. Penerima mengekstraknya
+sehingga isi `preview/` masuk ke `media/preview/`. Satu adegan sekitar 5 MB,
+jadi bungkus untuk satu orang biasanya 40–60 MB.
+
+Opsi lain: `--force` (potong ulang), `--limit N` (uji cepat), `--scale 480`,
+`--crf 30` (makin besar makin kecil berkasnya).
+
+### 7.3 Membuka aplikasi
+
+```bash
+uv sync --locked --extra asr --extra face --extra label
+uv run streamlit run scripts/07_annotate.py
+```
+
+`uv` hanya mempertahankan extra yang disebut. Menjalankan `--extra label`
+saja akan **mencabut** `face` dan `asr` dari laptop yang sama, sehingga
+`00_inventory.py` gagal dengan `No module named 'cv2'`. Sebut semuanya.
+
+Aplikasi membaca `pool.csv` dan `assignments.csv` dari `data/`, dan preview
+dari `media/preview/`. Alurnya:
+
+1. pilih nama di sidebar;
+2. pilih adegan; daftar adegan menampilkan progres tiap adegan;
+3. video mulai dari ujaran yang sedang dinilai — toggle **Mulai dari awal
+   adegan** untuk menonton konteks lebih dulu;
+4. klik satu dari lima kelas, atau `ambigu` / `tidak_layak`;
+5. atur keyakinan 1–5 dan catatan kalau perlu. Setelah satu label diklik,
+   aplikasi pindah ke ujaran berikutnya yang belum dilabeli.
+
+Label ditulis ke `data/labels_<nama>.csv` **setiap klik**, lewat berkas
+sementara lalu diganti, jadi sesi bisa ditutup kapan saja dan dilanjutkan
+besok. Kolomnya:
+
+```
+annotator, utterance_id, film_id, scene_id, role, label, confidence, notes, labeled_at
+```
+
+`role` (`milik` / `gold` / `silang`) ikut disimpan supaya `08_agree.py` bisa
+melaporkan kappa per jenis tugas, bukan hanya satu angka gabungan.
+
+Nama berkas memakai nama anotator, bukan nama mesin. Kalau satu orang sempat
+memakai dua laptop, `08_agree.py` tetap menggabungkannya lewat kunci
+`(annotator, utterance_id)`.
+
+Setelah sesi selesai, preview boleh dihapus: `media/preview/` hanya alat
+bantu, dan klip final dibuat `10_cut.py` dari film aslinya.
+
+### 7.4 Urutan sesi
+
+1. **Kalibrasi** — tonton beberapa adegan bersama, sepakati contoh tiap kelas.
+   Diskusi boleh.
+2. **Melabeli sendiri** — tidak ada diskusi. Ini yang membuat kappa berarti.
+   Kerjakan gold set lebih dulu supaya kesepakatan bisa dicek di tengah sesi.
+3. **Adjudikasi** — setelah semua selesai, bahas yang beda. `08_agree.py`
+   menandai ujaran yang perlu diputuskan.
 
 Aturan pelabelan lengkap ada di `docs/label_guideline.md`. Baca sebelum
 melabeli; label yang berubah setelah eksperimen dimulai membatalkan semua
 hasil.
 
----
-
-## 7. Seleksi, potong, dan split (belum tersedia)
-
-Urutannya nanti:
+### 7.5 Kesepakatan dan adjudikasi
 
 ```bash
-uv run python scripts/08_select.py    # 600 per kelas, terpusat
-uv run python scripts/09_cut.py       # potong klip di laptop pemilik film
-uv run python scripts/10_split.py     # split A/B/C, terpusat
+uv run python scripts/08_agree.py
 ```
 
-`08_select.py` dijalankan **sekali** oleh koordinator. Kalau setiap orang
-menyeleksi sendiri, kuota kelas habis di film yang sama.
+Membaca semua `data/labels_*.csv` yang dikumpulkan dari para anotator, lalu:
 
-`09_cut.py` dijalankan per orang karena berkas film tetap di laptop
-masing-masing. Yang dikirim hanya daftar `clip_id`.
+1. menggabungkan label dengan kunci `(annotator, utterance_id)` — satu orang
+   yang sempat memakai dua laptop tetap dihitung sebagai satu penilai;
+2. menghitung **Cohen's kappa** untuk setiap pasangan penilai dan **Fleiss'
+   kappa** untuk ujaran yang dinilai tiga orang atau lebih;
+3. memutuskan label akhir dengan suara mayoritas;
+4. menulis daftar ujaran yang tidak punya mayoritas ke
+   `data/adjudication.csv`.
 
-`10_split.py` memakai `actors.csv` untuk varian C. Tiga varian split:
+Kappa dikelompokkan per jenis tugas: `gold`, `silang`, `milik`, dan `semua`.
+Hanya tugas `gold` dan `silang` yang punya ujaran dinilai lebih dari satu
+orang, jadi di situlah kappa benar-benar terukur.
 
-- **A** — acak per ujaran;
-- **B** — per film;
-- **C** — per aktor.
+Kappa dihitung dari **label mentah**, bukan setelah adjudikasi. Kalau dihitung
+setelah keputusan koordinator, angkanya naik sendiri dan tidak lagi jujur.
 
-Ketiganya dilaporkan supaya terlihat berapa besar kebocoran yang disebabkan
-aktor yang sama muncul di train dan test.
+Aturan label akhir:
+
+| Status | Arti | Masuk `labels_final.csv` |
+|---|---|---|
+| `tunggal` | hanya satu penilai | ya |
+| `sepakat` | semua penilai sama | ya |
+| `mayoritas` | satu label > 50% penilai | ya |
+| `adjudikasi` | diputuskan manusia | ya |
+| `perlu_adjudikasi` | tidak ada mayoritas | belum |
+
+Keluaran:
+
+```
+data/labels_final.csv     utterance_id, label, confidence, n_raters, agreement, status
+data/adjudication.csv     ujaran tanpa mayoritas + kolom decision
+data/agreement_report.md  cakupan, matriks irisan, tabel kappa
+data/agreement_meta.json  angka kappa dan jumlah butir
+```
+
+Koordinator menulis laporan kappa dari `agreement_report.md`. Tafsirnya
+memakai Landis & Koch: di bawah 0,20 kesepakatan sedikit, 0,20–0,40 cukup,
+0,40–0,60 sedang, 0,60–0,80 baik, di atas 0,80 sangat baik.
+
+**Adjudikasi.** Buka `data/adjudication.csv`, isi kolom `decision` dengan salah
+satu kelas, `ambigu`, atau `tidak_layak`, isi `decided_by`, lalu jalankan
+skrip ini lagi. Keputusan yang sudah diisi tetap tersimpan di
+`adjudication.csv`, jadi riwayatnya tidak hilang. Kalau label mentah berubah
+dan keputusan lama ingin dibuang, pakai `--reset-decisions`.
+
+Ujaran yang belum diputuskan tidak masuk `labels_final.csv`, sehingga tahap
+seleksi tidak akan mengambilnya. Jumlahnya dicetak di akhir skrip.
+
+Kolom `confidence` pada baris `adjudikasi` adalah rata-rata keyakinan para
+penilai, bukan keyakinan pemutus; keputusan pemutus dicatat di `decided_by`.
+
+Opsi:
+
+```bash
+uv run python scripts/08_agree.py --min-overlap 20   # pasangan kecil tidak diberi kappa
+uv run python scripts/08_agree.py --reset-decisions
+```
+
+Pasangan dengan kurang dari 10 ujaran bersama ditandai `butir kurang`: angka
+kappa dari 5 ujaran terlalu liar untuk dilaporkan.
 
 ---
 
-## 8. Serah terima ke koordinator
+## 8. Seleksi, potong, split, dan laporan
 
-Kirim hanya berkas tabular dan catatan environment:
+Setelah adjudikasi selesai, empat langkah terakhir tidak memerlukan media di
+laptop koordinator.
+
+```bash
+uv run python scripts/09_select.py    # 600 per kelas, terpusat
+uv run python scripts/10_cut.py       # potong klip di laptop pemilik film
+uv run python scripts/11_split.py     # split A/B/C, terpusat
+uv run python scripts/12_audit.py --predictions <prediksi.csv>
+uv run python scripts/13_stats.py     # dataset card
+```
+
+### 8.1 `09_select.py` — seleksi berkuota
+
+```bash
+uv run python scripts/09_select.py
+```
+
+Membaca `labels_final.csv` + `pool.csv` dan memilih:
+
+- hanya label kelas (bukan `ambigu` / `tidak_layak`);
+- `confidence ≥ selection.min_label_conf` (3);
+- maksimal 15% tiap kelas dari satu film — **90 ujaran per film per kelas**;
+- bergiliran antar film, di dalam film keyakinan tertinggi lalu klip lebih
+  panjang, supaya sebarannya merata dan hasilnya deterministik.
+
+Konsekuensi batas 15%: 600 per kelas baru tercapai dengan sekitar tujuh film
+per kelas. Dengan tiga film, plafonnya 270 per kelas, dan skrip menuliskan
+kekurangannya per kelas — bukan menurunkan batas diam-diam.
+
+Keluaran: `data/selected.csv`, `data/selection_report.md`,
+`data/selection_meta.json`.
+
+Opsi untuk eksperimen kecil: `--per-class 20`, `--max-share 1.0`,
+`--min-conf 1`.
+
+### 8.2 `10_cut.py` — potong media
+
+Dijalankan **di laptop pemilik film**, sekali untuk semua klip yang ada di
+sana.
+
+```bash
+uv run python scripts/10_cut.py
+uv run python scripts/10_cut.py --limit 3          # uji cepat
+uv run python scripts/10_cut.py --no-faces         # tanpa video wajah
+```
+
+Tiga keluaran per klip:
+
+| Berkas | Isi | Ukuran rata-rata |
+|---|---|---|
+| `media/clips/<clip_id>.mp4` | 720p + audio | ~0,4–0,8 MB |
+| `media/audio/<clip_id>.wav` | 16 kHz mono | ~100 KB |
+| `media/faces/<clip_id>.mp4` | wajah dominan 224×224 @ 5 fps | ~40 KB |
+
+Wajah diambil dari frame yang sama dengan tahap 04, memakai detektor dan
+`face.frame_width` yang sama, lalu dipotong persegi dengan margin 1,35 dan
+diredam antar frame supaya tidak goyang. `--no-faces` melewati bagian ini.
+
+`data/clips.csv` mencatat path relatif, ukuran, dan status tiap klip
+(`ok`, `ada`, `film_tidak_ada`, `gagal`). Repo pelatihan membaca katalog ini,
+bukan folder media langsung.
+
+### 8.3 `11_split.py` — tiga varian split
+
+```bash
+uv run python scripts/11_split.py
+```
+
+| Varian | Aturan | Gunanya |
+|---|---|---|
+| A | acak per ujaran, stratifikasi kelas | angka optimistis |
+| B | per film | menutup kebocoran film |
+| C | per aktor | menutup kebocoran aktor |
+
+Keluaran `data/splits.csv` (kolom `split_A`, `split_B`, `split_C`) dan
+`data/split_report.md` berisi porsi tiap split, sebaran kelas, serta jumlah
+film/aktor yang bocor. Varian A diulang pada `split.n_seeds` seed dan
+rentangnya dilaporkan.
+
+Untuk varian C, isi `actor_label` di `data/actors.csv` lebih dulu. Kalau belum,
+skrip memakai klaster per film (`ABT13-A01`), sehingga aktor yang sama di dua
+film masih bisa bocor; laporan menyebutkan itu.
+
+### 8.4 `12_audit.py` — label vs prediksi model
+
+Skrip ini **tidak** melatih model. Repo pelatihan menghasilkan CSV
+`utterance_id, predicted, score`, lalu:
+
+```bash
+uv run python scripts/12_audit.py --predictions artifacts/pred_test.csv
+```
+
+Keluaran `data/disagreement.csv` (ujaran yang beda, urut skor model),
+`data/audit_report.md` (akurasi, matriks konfusi, rekap per kelas), dan
+`data/audit_meta.json`. Model yang salah tidak otomatis berarti labelnya salah;
+daftar ini untuk diperiksa manusia.
+
+### 8.5 `13_stats.py` — dataset card
+
+```bash
+uv run python scripts/13_stats.py
+```
+
+Menulis `data/dataset_card.md` dan `data/stats.json`: komposisi kelas, rasio
+ketidakseimbangan, kontribusi film, ukuran media, sebaran split A/B/C,
+kualitas label, dan keterbatasan. Angkanya diambil dari tabel, bukan dihitung
+ulang dari media, jadi bisa dijalankan di laptop mana pun.
+
+Kalau `data/clips.csv` belum mencakup semua klip terpilih, kartu memberi
+peringatan bahwa media belum lengkap.
+
+---
+
+## 9. Serah terima ke koordinator
+
+Satu perintah, jangan salin berkas manual:
+
+```bash
+uv run python scripts/05_merge.py --pack <namamu>
+```
+
+Hasilnya `kiriman/<nama>-<tanggal>.zip`. Kirim zip itu; tidak ada berkas lain
+yang perlu disalin. Yang ada di dalamnya:
 
 ```
-films.csv
-utterances.csv
-faces.csv
-actors.csv
+data/films.csv
+data/utterances.csv
+data/faces.csv
+data/actors.csv
+data/scenes.csv
 data/faces/<film_id>.csv
 data/faces/<film_id>.npy
-environment.lock.json
-config.yaml (kalau diminta memastikan hash)
+data/*/*_meta.json
+handover.json          pemilik, waktu, hash config + uv.lock
 ```
 
-Jangan kirim `media/`, `clips/`, atau `audio/`; ukurannya besar dan bisa dibuat
-ulang di laptop pemilik film.
-
-Sebelum menyerahkan:
+Sebelum membungkus:
 
 ```bash
 uv run python -m emosi.bootstrap --verify
-sha256sum config.yaml
+uv run pytest -q
 ```
 
-Hash `config` harus sama dengan koordinator. Kalau berbeda, jangan digabung
-dulu — cari tahu ambang mana yang berubah.
+Hash `config` harus sama dengan koordinator. Kalau berbeda, jangan dibungkus
+dulu — samakan config, lalu ulangi tahap yang terpengaruh (biasanya 03 dan 04).
 
-Koordinator menggabungkan per film, bukan menempel `*.csv` mentah. Potongan
-yang aman:
+Jangan kirim `media/`, `clips/`, atau `audio/`; ukurannya besar dan bisa dibuat
+ulang di laptop pemilik film. Folder `kiriman/` sudah masuk `.gitignore`.
 
-```python
-import pandas as pd
-from pathlib import Path
+Koordinator tidak menempel `*.csv` mentah. Ia menjalankan
+`05_merge.py --from kiriman/`, yang memeriksa hash config, kelengkapan
+embedding, dan film ganda sebelum menulis `data/merged/`.
 
-bagian = [pd.read_csv(p) for p in Path("kiriman").glob("*/utterances.csv")]
-gabung = pd.concat(bagian).drop_duplicates("utterance_id", keep="last")
-gabung.to_csv("data/utterances.csv", index=False)
-```
-
-Lakukan hal yang sama untuk `faces.csv` dengan kunci `utterance_id`, dan untuk
-`actors.csv` dengan kunci `actor_key`. Berkas `.npy` disalin per film ke
-`data/faces/`; jangan menggabungkannya, karena `emb_row` merujuk baris di
-berkas film masing-masing.
+Label **tidak** ikut zip di atas. `07_annotate.py` menulis
+`data/labels_<nama>.csv` setiap kali satu label diklik, dan berkas itulah yang
+diserahkan setelah sesi selesai — terpisah dari kiriman data. Jangan
+menggabungkannya ke `labels_kesan.csv` milik orang lain; `08_agree.py`
+menggabungkan berdasarkan kolom `annotator`.
 
 ---
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 | Gejala | Sebab | Tindakan |
 |---|---|---|
@@ -497,10 +992,49 @@ berkas film masing-masing.
 | Dua laptop punya `F01` | id tidak unik global | pakai pola tiga huruf + tahun, mis. `ABT13` |
 | Hasil film hilang setelah rerun | menjalankan tanpa `--film` dan tanpa `--force`? | hasil lama memang dipertahankan; cek pesan "dilewati" |
 | `commit dibatalkan: ada berkas di atas 5 MB` | hook `pre-commit` bekerja | keluarkan dengan `git rm --cached <berkas>`; jangan `git add -f` |
+| `kiriman tidak memuat data/utterances.csv` | zip dibuat manual atau folder yang ditunjuk salah | jalankan `05_merge.py --pack <nama>` |
+| `config.yaml berbeda (…… vs ……)` | config diubah di satu laptop | samakan config, ulangi 03 dan 04, bungkus ulang |
+| `ABT13 datang dari budi, kesan` | satu film diproses dua orang | pastikan yang benar, lalu `--keep <nama>` |
+| `nama kontributor dipakai dua kali` | dua zip dengan nama sama | ganti nama berkas atau foldernya |
+| `No module named 'streamlit'` | extra `label` belum dipasang | `uv sync --locked --extra label` |
+| `assignments.csv belum ada` | `--assign` belum dijalankan | koordinator menjalankan `07_annotate.py --assign` |
+| `Preview … belum ada` | adegan belum dipotong di laptop ini | `07_annotate.py --prepare`; kalau film orang lain, minta zip `--zip` dari pemiliknya |
+| `KeyError: ['title'] not in index` | `pool.csv` dibuat sebelum versi 06 terbaru | jalankan ulang `06_qc.py` |
+| `Kappa` bertuliskan `butir kurang` | irisan dua penilai < 10 ujaran | tambah gold set atau cek tukar silang tahap 07 |
+| `keputusan … bukan label sah` | typo di kolom `decision` | isi kelas, `ambigu`, atau `tidak_layak` |
+| `labels_final.csv` kosong | semua ujaran masih `perlu_adjudikasi` | isi `adjudication.csv`, jalankan ulang |
+| Seleksi berhenti di 270/kelas | batas 15% per film, film masih tiga | tambah film; jangan turunkan batas |
+| `10_cut.py` melaporkan `film_tidak_ada` | film itu bukan milik laptop ini | kirim `selected.csv` ke pemiliknya |
+| Split C masih bocor | `actor_label` kosong | isi `data/actors.csv`, jalankan ulang |
+| `No module named 'cv2'` setelah memasang streamlit | `uv sync --extra label` mencabut extra lain | sync dengan `--extra asr --extra face --extra label` |
+| `OrtCompileApiFlags` / `onnxruntime` gagal diimpor | paket CPU `onnxruntime` menimpa `onnxruntime-gpu` | lihat bagian 10.1 |
 
 ---
 
-## 10. Checklist per film
+### 10.1 `onnxruntime` CPU menimpa GPU
+
+`insightface` bergantung pada `onnxruntime` (CPU), sedangkan extra `face`
+memasang `onnxruntime-gpu`. Kalau `uv sync` memasang keduanya, berkas Python
+versi CPU bisa menimpa berkas GPU dan impor gagal dengan
+`cannot import name 'OrtCompileApiFlags'`.
+
+Gejalanya juga terlihat dari `uv pip list`: ada `onnxruntime` **dan**
+`onnxruntime-gpu` dengan versi berbeda.
+
+Perbaikan di laptop itu:
+
+```bash
+uv pip uninstall onnxruntime onnxruntime-gpu
+rm -rf .venv/lib/python3.11/site-packages/onnxruntime*
+uv pip install --no-deps onnxruntime-gpu==1.22.0
+uv run python -c "import onnxruntime as ort; print(ort.get_available_providers())"
+```
+
+Hasil yang benar memuat `CUDAExecutionProvider`. Periksa lagi setelah
+`uv sync` berikutnya; selama `onnxruntime` CPU ikut terpasang, masalah ini
+bisa muncul kembali.
+
+## 11. Checklist per film
 
 - [ ] film terdaftar di `films_registry.csv` dengan `path_contains` yang benar
 - [ ] subtitle Inggris ada satu folder dengan film
@@ -510,14 +1044,24 @@ berkas film masing-masing.
 - [ ] `03_utterances.py` → mayoritas ujaran `timing = asr`
 - [ ] `04_face_screen.py` → `face_ok` cukup, `provider` GPU
 - [ ] `actors.csv` → `actor_label` diisi untuk aktor utama
+- [ ] `05_merge.py --pack <nama>` → zip kiriman jadi
+- [ ] `07_annotate.py --prepare` → preview adegan tersedia
 - [ ] `bootstrap --verify` bersih
 - [ ] `config.yaml` hash sama dengan koordinator
 
-## 11. Checklist sebelum menyerahkan data
+## 12. Checklist sebelum menyerahkan data
 
 - [ ] semua film yang kamu pegang selesai tahap 00–04
 - [ ] `environment.lock.json` ikut
 - [ ] tidak ada `config.yaml` yang diubah sendiri
 - [ ] `actors.csv` sudah diisi nama aktor
-- [ ] 150 ujaran tukar silang sudah dilabeli (setelah tahap 06 tersedia)
-- [ ] berkas yang dikirim sesuai daftar bagian 8
+- [ ] 150 ujaran tukar silang sudah dilabeli
+- [ ] `labels_<nama>.csv` diserahkan ke koordinator (label tidak ikut zip)
+- [ ] `08_agree.py` dijalankan; tidak ada `perlu_adjudikasi` tersisa
+- [ ] `09_select.py` dijalankan; kekurangan kuota dijelaskan di laporan
+- [ ] `10_cut.py` selesai; `clips.csv` tanpa status `gagal`
+- [ ] `11_split.py` dijalankan; kebocoran film/aktor sesuai varian
+- [ ] `12_audit.py` dijalankan setelah repo model menghasilkan prediksi
+- [ ] `13_stats.py` dijalankan; `dataset_card.md` diperiksa
+- [ ] kiriman dibungkus dengan `--pack`, bukan salinan manual
+- [ ] yang dikirim sesuai daftar bagian 9

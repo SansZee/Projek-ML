@@ -37,13 +37,16 @@ data tidak perlu mengunduh 3 GB CUDA.
 |---|---|---|
 | `asr` | faster-whisper, jiwer | 01 |
 | `face` | insightface, onnxruntime-gpu | 04 |
-| `label` | streamlit | 06 |
-| `stats` | scikit-learn, statsmodels | 07 |
-| `ml` | torch, transformers, timm, lightning, optuna | 09–12 |
+| `label` | streamlit | 07 |
+| `stats` | scikit-learn, statsmodels | analisis tambahan (tidak wajib) |
+| `ml` | torch, transformers, timm, lightning, optuna | repo pelatihan |
 
 ```bash
 uv sync --locked --extra asr --extra face --extra label
 ```
+
+`uv` hanya mempertahankan extra yang disebut: `--extra label` saja akan
+mencabut `face` dan `asr`. Sebut semuanya dalam satu perintah.
 
 ## Urutan pipeline
 
@@ -54,14 +57,15 @@ uv sync --locked --extra asr --extra face --extra label
 | 3 | `02_scenes.py` | film → `scenes/<id>.csv` + `scenes.csv` | **selesai** |
 | 4 | `03_utterances.py` | ASR + adegan + SRT → `utterances.csv` | **selesai** |
 | 5 | `04_face_screen.py` | `utterances` → `faces.csv`, embedding, `actors.csv` | **selesai** |
-| 6 | `05_qc.py` | `utterances` → `pool.csv` | belum |
-| 7 | `06_annotate.py` | `pool.csv` → `labels_A/B.csv` | belum |
-| 8 | `07_agree.py` | labels → `labels_final.csv` + kappa | belum |
-| 9 | `08_select.py` | `labels_final` → `selected.csv` (600/kelas) | belum |
-| 10 | `09_cut.py` | `selected` → `clips/`, `audio/`, `faces/` | belum |
-| 11 | `10_split.py` | `selected` → split A/B/C | belum |
-| 12 | `11_audit.py` | labels vs model → `disagreement.csv` | belum |
-| 13 | `12_stats.py` | semua → statistik + dataset card | belum |
+| 6 | `05_merge.py` | kiriman 4 laptop → `data/merged/` | **selesai** |
+| 7 | `06_qc.py` | `merged` → `pool.csv`, rencana adegan | **selesai** |
+| 8 | `07_annotate.py` | `pool` → `assignments.csv` + `labels_<nama>.csv` | **selesai** |
+| 9 | `08_agree.py` | labels → `labels_final.csv` + kappa + adjudikasi | **selesai** |
+| 10 | `09_select.py` | `labels_final` → `selected.csv` (600/kelas) | **selesai** |
+| 11 | `10_cut.py` | `selected` → `clips/`, `audio/`, `faces/` | **selesai** |
+| 12 | `11_split.py` | `selected` → split A/B/C | **selesai** |
+| 13 | `12_audit.py` | labels vs prediksi → `disagreement.csv` | **selesai** |
+| 14 | `13_stats.py` | semua → statistik + dataset card | **selesai** |
 
 ## Struktur
 
@@ -69,10 +73,14 @@ uv sync --locked --extra asr --extra face --extra label
 config.yaml            satu versi untuk seluruh tim, di-commit
 films_registry.csv     film_id unik global
 models.lock.yaml       revisi bobot model
-src/emosi/             pustaka: config, media, subtitle, audio, video, bootstrap
+src/emosi/             pustaka: config, media, subtitle, audio, video, tahap 05–13
 scripts/               skrip per tahap, dijalankan dengan urutan nomor
-data/                  keluaran tabular (gitignored, pakai DVC)
-media/                 klip, audio, wajah (gitignored)
+data/                  keluaran tabular (gitignored)
+data/merged/           katalog gabungan semua anggota (gitignored)
+kiriman/               zip serah-terima antar-anggota (gitignored)
+media/                 media turunan (gitignored)
+media/preview/         preview adegan 480p untuk pelabelan (gitignored)
+media/clips/           klip 720p, audio, wajah (gitignored)
 ```
 
 ## Aturan yang tidak boleh dilanggar
@@ -81,9 +89,11 @@ media/                 klip, audio, wajah (gitignored)
    untuk semua orang lalu jelaskan di laporan.
 2. **`film_id` harus unik global.** Daftarkan di `films_registry.csv` sebelum
    memproses film baru.
-3. **Labeli semua, pilih nanti.** `08_select.py` dijalankan sekali secara
+3. **Labeli semua, pilih nanti.** `09_select.py` dijalankan sekali secara
    terpusat, bukan per orang.
-4. **Kunci label setelah adjudikasi** (checksum dicatat di `labels_final.csv`).
+4. **Kirim lewat `--pack`, bukan salin manual.** `05_merge.py` memeriksa hash
+   config dan kelengkapan berkas; kiriman manual biasanya kehilangan `.npy`.
+5. **Kunci label setelah adjudikasi** (checksum dicatat di `labels_final.csv`).
 
 Panduan langkah demi langkah ada di **`docs/panduan-pemakaian.md`**.
 Pembagian kerja empat orang ada di `docs/koordinasi.md`.

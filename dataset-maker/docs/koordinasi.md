@@ -6,13 +6,14 @@ Empat orang, masing-masing memegang sebagian film, digabung di akhir.
 
 | Tahap | Siapa | Alasan |
 |---|---|---|
-| `00` inventory → `05` QC | per orang, di laptop masing-masing | butuh berkas film yang hanya ada di orang itu |
-| `06` pelabelan | per orang + **150 ujaran tukar silang** | tanpa overlap, kappa tidak bisa dihitung |
-| `07` kappa + adjudikasi | terpusat | kappa lintas anotator harus satu hitungan |
-| `08` seleksi 600/kelas | terpusat, sekali saja | kalau per orang, semua orang menyerobot kelas yang sama |
-| `09` potong klip | per orang, setelah daftar seleksi dibagi | berkas film tetap di laptop masing-masing |
-| `10` split A/B/C | terpusat | butuh `actors.csv` dari semua film |
-| `11` audit + `12` statistik | terpusat | butuh seluruh 3000 klip terkumpul |
+| `00`–`04` | per orang, di laptop masing-masing | butuh berkas film yang hanya ada di orang itu |
+| `05` merge + `06` QC | koordinator, sekali | katalog gabungan dan rencana adegan harus satu versi |
+| `07` pelabelan | per orang + **150 ujaran tukar silang** | tanpa overlap, kappa tidak bisa dihitung |
+| `08` kappa + adjudikasi | terpusat | kappa lintas anotator harus satu hitungan |
+| `09` seleksi 600/kelas | terpusat, sekali saja | kalau per orang, semua orang menyerobot kelas yang sama |
+| `10` potong klip | per orang, setelah daftar seleksi dibagi | berkas film tetap di laptop masing-masing |
+| `11` split A/B/C | terpusat | butuh `actors.csv` dari semua film |
+| `12` audit + `13` statistik | terpusat | butuh seluruh 3000 klip terkumpul |
 
 ## Aturan `film_id`
 
@@ -34,24 +35,29 @@ laptop siapa pun. Kalau tidak cocok, `00_inventory.py` membuat id otomatis dan
 
 Tanpa ini, bagian "uji kesepakatan antar-anotator" di laporan kosong.
 
-1. Setelah `pool.csv` siap, ekspor 150 ujaran acak **beserta video adegannya**.
-2. Kirim ke satu anggota lain, terima 150 dari anggota ketiga.
-3. Labeli, lalu serahkan `labels_cross.csv` ke koordinator.
-4. Lakukan di minggu yang sama, jangan ditunda ke akhir.
+1. Koordinator menjalankan `07_annotate.py --assign --people <empat nama>`.
+   Skrip memilih dua adegan gold dan satu set 150 ujaran per pemilik film.
+2. Tiap pemilik film menjalankan `--prepare` untuk preview adegan sendiri, lalu
+   `--prepare --zip <nama>` untuk adegan yang dibutuhkan orang lain.
+3. Anotator melabeli gold set lebih dulu, lalu 150 ujaran silang.
+4. Serahkan `labels_<nama>.csv` ke koordinator. Jangan menyalin label orang
+   lain ke berkas sendiri.
+
+Lakukan di minggu yang sama, jangan ditunda ke akhir.
 
 ## Berkas yang diserahkan per orang
 
 ```
-films.csv            hasil 00_inventory
-asr/*.json           opsional, besar — cukup simpan di laptop masing-masing
-utterances.csv
-faces.csv            hasil 04_face_screen
-faces/<film_id>.npy  embedding wajah, sejajar baris faces/<film_id>.csv
-actors.csv           daftar aktor per film (input split C), actor_label diisi
-pool.csv
-labels_final.csv
-environment.lock.json
+kiriman/<nama>-<tanggal>.zip   hasil 05_merge.py --pack
 ```
+
+Isi zip itu sudah mencakup `films.csv`, `utterances.csv`, `faces.csv`,
+`faces/<film_id>.npy`, `actors.csv`, `scenes.csv`, dan `handover.json`. Tidak
+ada berkas lain yang perlu disalin manual. `actors.csv` di dalamnya harus sudah
+diisi `actor_label`.
+
+Label tidak ikut zip: `labels_<nama>.csv` diserahkan terpisah setelah sesi
+pelabelan, karena isinya baru ada di tahap `07`.
 
 `clips/`, `audio/`, `faces/` **tidak** dikirim. Yang dikirim daftar `clip_id`
 hasil seleksi terpusat; potongan klip dibuat di laptop masing-masing lalu
@@ -61,8 +67,9 @@ dikumpulkan sesuai kebutuhan eksperimen.
 
 - [ ] `uv run python -m emosi.bootstrap --verify` bersih
 - [ ] `config.yaml` tidak diubah (bandingkan hash dengan koordinator)
+- [ ] kiriman dibungkus `05_merge.py --pack <nama>`, bukan salinan manual
 - [ ] `film_id` terdaftar di registri
-- [ ] `labels_final.csv` sudah dikunci (checksum dicatat)
+- [ ] `labels_<nama>.csv` diserahkan, `labels_final.csv` dikunci koordinator
 - [ ] 150 ujaran tukar silang sudah dilabeli
 - [ ] `actors.csv` untuk film yang dipegang, `actor_label` sudah diisi
 
