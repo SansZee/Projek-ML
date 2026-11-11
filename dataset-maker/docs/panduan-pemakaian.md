@@ -7,7 +7,7 @@ bukan hanya untuk satu mesin.
 Status tahap per tulisan ini:
 
 | Skrip | Status | Keterangan |
-|---|---|---|---|
+|---|---|---|
 | `00_inventory.py` | **tersedia** | audisi film, `films.csv` |
 | `01_asr.py` | **tersedia** | transkrip + timestamp kata |
 | `02_scenes.py` | **tersedia** | adegan anotasi 2–3 menit |
