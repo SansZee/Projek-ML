@@ -34,7 +34,7 @@ from emosi.config import Config, load_config
 from emosi.media import SUB_EXT, VIDEO_EXT, MediaInfo, probe_media, require_tools
 from emosi.subtitle import SubtitleStats, parse_srt, subtitle_stats
 
-YEAR = re.compile(r"(19|20)\d{2}")
+YEAR = re.compile(r"(?:19|20)\d{2}")
 RELEASE_NOISE = re.compile(
     r"\b(1080p|720p|2160p|bluray|blu-ray|webrip|web-dl|x265|x264|hevc|aac|ac3|10bit)\b.*$",
     re.IGNORECASE,
@@ -112,7 +112,33 @@ def dedupe_by_folder(infos: dict[Path, MediaInfo]) -> dict[Path, MediaInfo]:
     return {p: i for p, i in infos.items() if p in keep}
 
 
+RELEASE_WORDS = {
+    "1080p", "720p", "480p", "2160p", "bluray", "brrip", "bdrip", "webrip",
+    "hdtv", "remux", "x264", "x265", "h264", "h265", "hevc", "10bit", "8bit",
+    "hdr", "aac", "ac3", "dts", "ddp", "repack", "proper", "extended", "yify",
+    "yawntic", "rarbg", "sparks", "tigole", "bokutox", "drones", "ethd",
+    "english", "sub", "subs", "srt",
+}
+
+
+def title_tokens(stem: str) -> set[str]:
+    """Kata yang menamai filmnya, tanpa istilah rilis dan angka resolusi."""
+    words = re.split(r"[^a-z0-9]+", stem.lower())
+    return {
+        word
+        for word in words
+        if len(word) >= 4 and not word.isdigit() and word not in RELEASE_WORDS
+    }
+
+
 def find_subtitle(video_path: Path, raw_dir: Path) -> Path | None:
+    """Cari subtitle yang memang untuk film ini.
+
+    Folder film diutamakan. Kalau subtitle-nya ada di folder induk, hanya
+    kandidat yang berbagi kata judul yang diterima: tanpa syarat itu, film
+    tanpa subtitle sendiri akan diam-diam memakai subtitle film lain — teksnya
+    salah total dan tidak ada tahap yang berhenti.
+    """
     search_dirs = [video_path.parent]
     if video_path.parent != raw_dir and video_path.parent.parent not in (None, raw_dir.parent):
         search_dirs.append(video_path.parent.parent)
@@ -124,6 +150,12 @@ def find_subtitle(video_path: Path, raw_dir: Path) -> Path | None:
         candidates.extend(
             p for p in directory.iterdir() if p.is_file() and p.suffix.lower() in SUB_EXT
         )
+    if not candidates:
+        return None
+
+    wanted = title_tokens(video_path.stem)
+    if wanted:
+        candidates = [p for p in candidates if title_tokens(p.stem) & wanted]
     if not candidates:
         return None
 

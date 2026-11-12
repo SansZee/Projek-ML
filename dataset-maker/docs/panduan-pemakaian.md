@@ -236,6 +236,7 @@ films_registry.csv     daftar film_id unik global
 models.lock.yaml       catatan revisi bobot model
 .gitattributes         LF untuk teks, biner tidak dikonversi
 .githooks/pre-commit   pengaman: tolak berkas > 5 MB
+.streamlit/config.toml tema aplikasi pelabelan
 src/emosi/             pustaka bersama
 scripts/               skrip per tahap, dijalankan berurutan
 data/                  keluaran tabular (gitignored)
@@ -784,6 +785,11 @@ jadi bungkus untuk satu orang biasanya 40–60 MB.
 Opsi lain: `--force` (potong ulang), `--limit N` (uji cepat), `--scale 480`,
 `--crf 30` (makin besar makin kecil berkasnya).
 
+Preview 480p cukup untuk klip di kolom kiri, tetapi terlihat lembut kalau
+diperbesar ke layar penuh. Kalau wajah perlu dinilai dari dekat, potong ulang
+dengan `--scale 720 --force`: ukuran naik kira-kira dua kali (66 adegan
+~700 MB), resolusinya jauh lebih enak dilihat.
+
 ### 7.3 Membuka aplikasi
 
 ```bash
@@ -798,13 +804,22 @@ saja akan **mencabut** `face` dan `asr` dari laptop yang sama, sehingga
 Aplikasi membaca `pool.csv` dan `assignments.csv` dari `data/`, dan preview
 dari `media/preview/`. Alurnya:
 
-1. pilih nama di sidebar;
-2. pilih adegan; daftar adegan menampilkan progres tiap adegan;
-3. video mulai dari ujaran yang sedang dinilai — toggle **Mulai dari awal
-   adegan** untuk menonton konteks lebih dulu;
-4. klik satu dari lima kelas, atau `ambigu` / `tidak_layak`;
-5. atur keyakinan 1–5 dan catatan kalau perlu. Setelah satu label diklik,
-   aplikasi pindah ke ujaran berikutnya yang belum dilabeli.
+1. pilih nama di sidebar — progres total dan progres adegan terlihat di sana;
+2. pilih adegan; daftar adegan menampilkan berapa ujaran yang sudah selesai;
+3. pilih ujaran; tanda ✓ berarti sudah pernah dilabeli;
+4. video di kiri mulai dari ujaran itu, transkrip dan metadata di kanan.
+   Toggle **Mulai dari awal adegan** untuk menonton konteks lebih dulu;
+5. atur keyakinan 1–5 dan catatan bila perlu, lalu tekan tombol kelas.
+   Papan ketik: `1`–`5` untuk kelas, `6` ambigu, `0` tidak layak;
+6. label langsung tersimpan dan aplikasi pindah ke ujaran berikutnya yang
+   belum dilabeli.
+
+Tombol kelas diberi warna tetap (senang, sedih, marah, takut, netral) supaya
+mata bisa memilih tanpa membaca ulang, dan legenda warnanya ada di sidebar.
+
+Kalau wajah perlu dinilai dari dekat, nyalakan **Video penuh** di sidebar:
+video memakai seluruh lebar layar dan teks pindah ke bawahnya, dengan
+konsekuensi tombol label perlu di-scroll. Untuk sesi biasa biarkan mati.
 
 Label ditulis ke `data/labels_<nama>.csv` **setiap klik**, lewat berkas
 sementara lalu diganti, jadi sesi bisa ditutup kapan saja dan dilanjutkan

@@ -1,0 +1,13 @@
+# Tema aplikasi pelabelan. Satu versi untuk semua laptop, di-commit.
+# Warna tombol kelas diatur di scripts/07_annotate.py (CLASS_COLORS), bukan di
+# sini, karena Streamlit hanya punya satu primaryColor.
+[theme]
+base = "light"
+primaryColor = "#0D9488"
+backgroundColor = "#F8FAFC"
+secondaryBackgroundColor = "#F1F5F9"
+textColor = "#0F172A"
+font = "sans-serif"
+
+[browser]
+gatherUsageStats = false

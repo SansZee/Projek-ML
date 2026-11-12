@@ -75,6 +75,7 @@ mencabut `face` dan `asr`. Sebut semuanya dalam satu perintah.
 ```
 config.yaml            satu versi untuk seluruh tim, di-commit
 .gitattributes         LF untuk teks, biner tidak dikonversi
+.streamlit/config.toml tema aplikasi pelabelan
 films_registry.csv     film_id unik global
 models.lock.yaml       revisi bobot model
 src/emosi/             pustaka: config, media, subtitle, audio, video, tahap 05–13

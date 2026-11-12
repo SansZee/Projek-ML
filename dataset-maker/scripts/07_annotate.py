@@ -299,19 +299,90 @@ def mmss(seconds: float) -> str:
     return f"{total // 60:02d}:{total % 60:02d}"
 
 
+CLASS_COLORS = {
+    "senang": "#B45309",
+    "sedih": "#1D4ED8",
+    "marah": "#B91C1C",
+    "takut": "#6D28D9",
+    "netral": "#334155",
+}
+
+BADGE_COLORS = {
+    "senang": "orange",
+    "sedih": "blue",
+    "marah": "red",
+    "takut": "violet",
+    "netral": "gray",
+}
+
+APP_CSS = """
+<style>
+  [data-testid="stMainBlockContainer"], .block-container {
+    max-width: 1600px; padding-top: 1.4rem; padding-bottom: 3.5rem;
+  }
+  [data-testid="stHeader"] { background: transparent; }
+  #MainMenu, footer { visibility: hidden; }
+
+  .emosi-legend { display: grid; gap: .3rem; margin: .3rem 0 .2rem; }
+  .emosi-legend div { font-size: .85rem; color: #334155; }
+  .emosi-legend i {
+    display: inline-block; width: .65rem; height: .65rem; border-radius: 999px;
+    margin-right: .5rem; vertical-align: baseline;
+  }
+
+  [class*="st-key-label-"] button {
+    min-height: 3.2rem; border-radius: .7rem; border: 1px solid transparent;
+    transition: background-color .15s ease, box-shadow .15s ease;
+  }
+  [class*="st-key-label-"] button p { font-weight: 650; font-size: 1rem; }
+  [class*="st-key-label-"] button:hover { filter: brightness(.9); }
+  [class*="st-key-label-"] button:focus-visible {
+    outline: 2px solid #0F172A; outline-offset: 2px;
+  }
+  [class*="st-key-label-senang-"] button { background: #B45309; color: #fff; }
+  [class*="st-key-label-senang-"] button p { color: #fff; }
+  [class*="st-key-label-sedih-"] button { background: #1D4ED8; color: #fff; }
+  [class*="st-key-label-sedih-"] button p { color: #fff; }
+  [class*="st-key-label-marah-"] button { background: #B91C1C; color: #fff; }
+  [class*="st-key-label-marah-"] button p { color: #fff; }
+  [class*="st-key-label-takut-"] button { background: #6D28D9; color: #fff; }
+  [class*="st-key-label-takut-"] button p { color: #fff; }
+  [class*="st-key-label-netral-"] button { background: #334155; color: #fff; }
+  [class*="st-key-label-netral-"] button p { color: #fff; }
+
+  [class*="st-key-special-"] button { min-height: 2.5rem; border-radius: .6rem; }
+  [class*="st-key-special-ambiguous-"] button {
+    border: 1px solid #0D9488; color: #0F766E; background: transparent;
+  }
+  [class*="st-key-special-noteligible-"] button {
+    border: 1px solid #B91C1C; color: #991B1B; background: transparent;
+  }
+  [class*="st-key-special-lewati"] button { color: #475569; }
+
+  @media (prefers-reduced-motion: reduce) {
+    [class*="st-key-label-"] button { transition: none; }
+  }
+</style>
+"""
+
+
 def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     import streamlit as st
 
     from emosi import annotate as ann
 
     st.set_page_config(page_title="Pelabelan emosi", layout="wide")
+    st.markdown(APP_CSS, unsafe_allow_html=True)
     cfg = load_config(os.environ.get("EMOSI_CONFIG", "config.yaml"))
     data_dir = cfg.resolve("paths.data_dir")
     preview_dir = cfg.resolve("paths.media_dir") / "preview"
 
     pool_path = data_dir / POOL
     assignment_path = data_dir / ASSIGNMENTS
-    missing = [path.name for path in (pool_path, assignment_path) if not path.exists()]
+    scene_path = data_dir / POOL_SCENES
+    missing = [
+        path.name for path in (pool_path, assignment_path, scene_path) if not path.exists()
+    ]
     if missing:
         st.error(
             f"{', '.join(missing)} belum ada di `{data_dir}`. Minta koordinator "
@@ -321,13 +392,17 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
 
     pool = pd.read_csv(pool_path)
     assignments = pd.read_csv(assignment_path)
+    # Preview dipotong mulai start_s di pool_scenes.csv. Semua posisi di UI harus
+    # memakai titik itu, bukan ujaran pertama — selisihnya bisa puluhan detik.
+    scene_bounds = scene_times(data_dir)
     classes = cfg.classes()
     ambiguous = str(cfg.get("labels.ambiguous_token"))
     not_eligible = str(cfg.get("labels.not_eligible_token"))
     confidence_min = int(cfg.get("labels.confidence_min"))
     confidence_max = int(cfg.get("labels.confidence_max"))
 
-    st.title("Pelabelan emosi")
+    st.sidebar.markdown("### Pelabelan emosi")
+    st.sidebar.caption(f"`{cfg.get('project.name')}`")
     with st.expander("Aturan sesi (baca sekali)", expanded=False):
         st.markdown(
             "- **Kalibrasi dulu** bersama tim: sepakati contoh tiap kelas. Boleh "
@@ -392,11 +467,26 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         mine = mine[mine["text"].notna()]
 
     done_total, all_total = ann.progress(labels, assignments, annotator)
-    st.sidebar.progress(min(1.0, done_total / max(1, all_total)))
-    st.sidebar.caption(f"{done_total} / {all_total} ujaran selesai")
+    percent = int(round(100 * done_total / max(1, all_total)))
+    st.sidebar.progress(
+        min(1.0, done_total / max(1, all_total)),
+        text=f"{done_total} / {all_total} ujaran · {percent}%",
+    )
     roles = mine.groupby("role").size().to_dict()
     st.sidebar.caption(
         " · ".join(f"{role} {count}" for role, count in sorted(roles.items()))
+    )
+    st.sidebar.divider()
+    st.sidebar.caption("Warna tombol")
+    legend = "".join(
+        f'<div><i style="background:{CLASS_COLORS.get(name, "#334155")}"></i>{name}</div>'
+        for name in classes
+    )
+    st.sidebar.markdown(f'<div class="emosi-legend">{legend}</div>', unsafe_allow_html=True)
+    video_penuh = st.sidebar.toggle(
+        "Video penuh",
+        key="video_penuh",
+        help="Video selebar layar, teks pindah ke bawah. Untuk menilai wajah dari dekat.",
     )
 
     scenes = (
@@ -450,14 +540,24 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         .sort_values("index", kind="stable")
         .reset_index(drop=True)
     )
-
-    st.subheader(f"{scene['title']} · {scene_id}")
-    scene_index = scene_ids.index(str(scene_id)) + 1
-    st.caption(
-        f"adegan {scene_index}/{len(scene_ids)} · "
-        f"{mmss(scene['start'])}–{mmss(scene['end'])} · "
-        f"{len(scene_rows)} ujaran"
+    scene_total = len(scene_rows)
+    scene_finished = scene_done.get(str(scene_id), 0) >= scene_total
+    cut_start, cut_end = scene_bounds.get(
+        str(scene_id), (float(scene["start"]), float(scene["end"]))
     )
+    st.sidebar.progress(
+        scene_done.get(str(scene_id), 0) / max(1, scene_total),
+        text=f"{scene_done.get(str(scene_id), 0)} / {scene_total} di adegan ini",
+    )
+
+    scene_index = scene_ids.index(str(scene_id)) + 1
+    st.markdown(f"#### {scene['title']}")
+    st.caption(
+        f"`{scene_id}` · adegan {scene_index}/{len(scene_ids)} · "
+        f"{mmss(cut_start)}–{mmss(cut_end)} · {scene_total} ujaran"
+    )
+    if scene_finished:
+        st.badge("adegan ini selesai", color="green")
 
     preview = preview_dir / f"{scene_id}.mp4"
     if not preview.exists():
@@ -486,7 +586,7 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     def utterance_label(utterance_id: str) -> str:
         row = scene_rows[scene_rows["utterance_id"].astype(str) == utterance_id].iloc[0]
         mark = "✓" if utterance_id in done_ids else "·"
-        offset = mmss(float(row["start_s"]) - float(scene["start"]))
+        offset = mmss(float(row["start_s"]) - cut_start)
         text = str(row["text"])
         return f"{mark} {offset} · {text[:70]}"
 
@@ -496,38 +596,62 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     )
     current = scene_rows[scene_rows["utterance_id"].astype(str) == str(utterance_id)].iloc[0]
 
-    offset = max(0.0, float(current["start_s"]) - float(scene["start"]))
+    offset = max(0.0, float(current["start_s"]) - cut_start)
     duration = max(0.5, float(current["end_s"]) - float(current["start_s"]))
-    whole_scene = st.toggle("Mulai dari awal adegan", value=False)
-    if whole_scene:
-        st.video(str(preview))
-    else:
-        st.video(
-            str(preview),
-            start_time=int(offset),
-            end_time=int(offset + duration) + 1,
-        )
-
     existing = label_by_id.get(str(utterance_id))
-    if existing is not None:
-        st.info(
-            f"Sudah dilabeli: **{existing.label}** "
-            f"(keyakinan {existing.confidence})"
-        )
-    st.markdown(f"### {current['text']}")
-    st.caption(
-        f"{mmss(current['start_s'])}–{mmss(current['end_s'])} · "
-        f"{int(current['duration_s'])} detik · {current['role']}"
-    )
 
-    confidence = st.radio(
-        "Keyakinan (1 ragu – 5 yakin)",
-        list(range(confidence_min, confidence_max + 1)),
-        horizontal=True,
-        index=2 if confidence_min <= 3 <= confidence_max else 0,
-        key="confidence",
-    )
-    notes = st.text_input("Catatan (opsional)", key=f"notes_{utterance_id}")
+    def video_block() -> None:
+        if whole_scene:
+            st.video(str(preview), width="stretch", alt=f"Preview adegan {scene_id}")
+        else:
+            st.video(
+                str(preview),
+                start_time=offset,
+                end_time=min(offset + duration + 0.4, cut_end - cut_start),
+                width="stretch",
+                alt=f"Preview adegan {scene_id}",
+            )
+
+    def text_block() -> None:
+        if existing is not None:
+            st.badge(
+                f"Sudah dilabeli: {existing.label}",
+                color=BADGE_COLORS.get(str(existing.label), "gray"),
+            )
+            st.caption(f"keyakinan {existing.confidence}")
+        st.markdown(f"### {current['text']}")
+        st.caption(
+            f"{mmss(current['start_s'])}–{mmss(current['end_s'])} · "
+            f"{int(current['duration_s'])} detik · {current['role']}"
+        )
+
+    def control_block() -> tuple[int, str]:
+        chosen = st.radio(
+            "Keyakinan (1 ragu – 5 yakin)",
+            list(range(confidence_min, confidence_max + 1)),
+            horizontal=True,
+            index=2 if confidence_min <= 3 <= confidence_max else 0,
+            key="confidence",
+            help="1 = menebak, 3 = cukup yakin, 5 = sangat yakin.",
+        )
+        note = st.text_input("Catatan (opsional)", key=f"notes_{utterance_id}")
+        return int(chosen), str(note)
+
+    whole_scene = st.toggle("Mulai dari awal adegan", value=False)
+    if video_penuh:
+        video_block()
+        text_col, control_col = st.columns([1.6, 1], gap="large")
+        with text_col:
+            text_block()
+        with control_col:
+            confidence, notes = control_block()
+    else:
+        video_col, side_col = st.columns([2.4, 1], gap="large")
+        with video_col:
+            video_block()
+        with side_col:
+            text_block()
+            confidence, notes = control_block()
 
     def save(label: str) -> None:
         ann.upsert_labels(
@@ -555,17 +679,42 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
             }
         st.rerun()
 
-    columns = st.columns(len(classes))
-    for column, name in zip(columns, classes, strict=True):
-        if column.button(name, key=f"label_{name}_{utterance_id}", use_container_width=True):
+    st.caption(
+        "Beri label — tekan `1`–`5` untuk kelas, `6` ambigu, `0` tidak layak. "
+        "Tiap klik langsung tersimpan."
+    )
+    label_cols = st.columns(len(classes), gap="small")
+    for index, (column, name) in enumerate(
+        zip(label_cols, classes, strict=True), start=1
+    ):
+        if column.button(
+            f"{index} · {name}",
+            key=f"label-{name}-{utterance_id}",
+            shortcut=str(index),
+            width="stretch",
+        ):
             save(name)
 
-    special = st.columns(3)
-    if special[0].button(ambiguous, key=f"label_amb_{utterance_id}"):
+    special = st.columns(3, gap="small")
+    if special[0].button(
+        f"6 · {ambiguous}",
+        key=f"special-ambiguous-{utterance_id}",
+        shortcut="6",
+        width="stretch",
+    ):
         save(ambiguous)
-    if special[1].button(not_eligible, key=f"label_no_{utterance_id}"):
+    if special[1].button(
+        f"0 · {not_eligible.replace('_', ' ')}",
+        key=f"special-noteligible-{utterance_id}",
+        shortcut="0",
+        width="stretch",
+    ):
         save(not_eligible)
-    if special[2].button("lewati", key=f"skip_{utterance_id}"):
+    if special[2].button(
+        "Lewati ujaran ini",
+        key=f"special-lewati-{utterance_id}",
+        width="stretch",
+    ):
         remaining = [
             str(value)
             for value in scene_rows["utterance_id"]
@@ -578,7 +727,7 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
             }
         st.rerun()
 
-    if all(str(value) in done_ids for value in scene_rows["utterance_id"]):
+    if scene_finished:
         st.success("Adegan ini selesai.")
         next_scenes = [s for s in scene_ids if s != str(scene_id)]
         if next_scenes:
@@ -590,7 +739,7 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
                 ):
                     target = candidate
                     break
-            if st.button("Adegan berikutnya"):
+            if st.button("Adegan berikutnya", type="primary"):
                 st.session_state["_next_scene"] = target
                 st.rerun()
 
