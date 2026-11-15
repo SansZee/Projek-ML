@@ -28,6 +28,11 @@ Aplikasi menulis ``data/labels_<nama>.csv`` dan menambah baris setiap kali
 satu label diklik. Sesi bisa ditutup kapan saja: yang sudah dilabeli tidak
 ditanya lagi.
 
+``--prepare`` menghasilkan dua hal: ``media/preview/<scene>.mp4`` (480p) dan
+``media/face_preview/<utterance>.jpg`` — tiga potongan wajah pada 25/50/75%
+ujaran, diambil dari preview dengan aturan yang sama seperti ``10_cut.py``.
+Anotator memakainya untuk memastikan wajah yang dinilai memang penutur.
+
 Tugas setiap orang:
 
   milik    seluruh adegan terpilih di film yang ada di laptopnya
@@ -48,9 +53,9 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
-from emosi import annotate
+from emosi import annotate, face_preview
 from emosi.config import Config, load_config
-from emosi.media import require_tools, run_ffmpeg
+from emosi.media import probe_media, require_tools, run_ffmpeg
 
 ASSIGNMENTS = "assignments.csv"
 POOL = "pool.csv"
@@ -162,6 +167,74 @@ def preview_path(media_dir: Path, scene_id: str) -> Path:
     return media_dir / "preview" / f"{scene_id}.mp4"
 
 
+def build_face_strips(
+    cfg: Config,
+    scene_ids: set[str],
+    times: dict[str, tuple[float, float]],
+    *,
+    force: bool = False,
+) -> None:
+    """Strip wajah 3 titik per ujaran, untuk ditampilkan saat melabeli.
+
+    Diambil dari preview 480p, bukan film asli: anotator pemilik film lain
+    hanya punya preview, dan yang perlu dikenali di sini wajahnya, bukan
+    detailnya. Potongan final untuk model tetap dibuat ``10_cut.py`` dari film.
+    """
+    from emosi import cut, face, face_preview
+
+    data_dir = cfg.resolve("paths.data_dir")
+    media_dir = cfg.resolve("paths.media_dir")
+    pool_path = data_dir / POOL
+    if not pool_path.exists() or not scene_ids:
+        return
+
+    pool = pd.read_csv(pool_path)
+    rows = pool[pool["scene_id"].astype(str).isin(scene_ids)]
+    if rows.empty:
+        return
+
+    out_dir = media_dir / "face_preview"
+    settings = face.settings_from_config(cfg)
+    cut_settings = cut.CutSettings()
+    analyzer, provider = face.build_analyzer(settings)
+
+    print(
+        f"\nstrip wajah · {len(rows)} ujaran · {settings.sample_fps:g} fps · "
+        f"{provider} → {out_dir}"
+    )
+    made = skipped = missing = 0
+    for scene_id, group in tqdm(
+        rows.groupby("scene_id", sort=False), desc="adegan", unit="adegan"
+    ):
+        preview = preview_path(media_dir, str(scene_id))
+        if not preview.exists():
+            missing += len(group)
+            continue
+        info = probe_media(preview)
+        scene_start = float(times.get(str(scene_id), (0.0, 0.0))[0])
+        for row in group.itertuples():
+            dest = face_preview.strip_path(out_dir, str(row.utterance_id))
+            if dest.exists() and not force:
+                skipped += 1
+                continue
+            start = max(0.0, float(row.start_s) - scene_start)
+            end = max(start + 0.05, float(row.end_s) - scene_start)
+            tiles = face_preview.strip_tiles(
+                analyzer,
+                preview,
+                start,
+                end,
+                info.width,
+                info.height,
+                settings=settings,
+                margin=cut_settings.face_margin,
+                size=cut_settings.face_size,
+            )
+            face_preview.save_strip(dest, face_preview.compose_strip(tiles))
+            made += 1
+    print(f"  {made} dibuat · {skipped} sudah ada · {missing} tanpa preview")
+
+
 def run_prepare(cfg: Config, args) -> int:
     require_tools("ffmpeg", "ffprobe")
     data_dir = cfg.resolve("paths.data_dir")
@@ -217,6 +290,14 @@ def run_prepare(cfg: Config, args) -> int:
                     source, dest, start_s, end_s, scale=args.scale, crf=args.crf
                 )
             )
+
+    if not args.no_faces and jobs:
+        build_face_strips(
+            cfg,
+            {scene_id for _, scene_id, _, _, _ in jobs},
+            times,
+            force=args.force,
+        )
 
     if unavailable:
         print()
@@ -376,6 +457,16 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     cfg = load_config(os.environ.get("EMOSI_CONFIG", "config.yaml"))
     data_dir = cfg.resolve("paths.data_dir")
     preview_dir = cfg.resolve("paths.media_dir") / "preview"
+    face_dir = cfg.resolve("paths.media_dir") / "face_preview"
+    face_stats: dict[str, tuple[float, float]] = {}
+    faces_path = data_dir / "faces.csv"
+    if faces_path.exists():
+        faces = pd.read_csv(faces_path)
+        for row in faces.itertuples():
+            face_stats[str(row.utterance_id)] = (
+                float(row.multi_face_share),
+                float(row.dominant_share),
+            )
 
     pool_path = data_dir / POOL
     assignment_path = data_dir / ASSIGNMENTS
@@ -611,6 +702,22 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
                 width="stretch",
                 alt=f"Preview adegan {scene_id}",
             )
+        strip = face_preview.strip_path(face_dir, str(utterance_id))
+        if strip.exists():
+            st.image(str(strip), caption="Wajah yang dipakai model · 25/50/75%")
+        else:
+            st.caption(
+                "Strip wajah belum ada — jalankan `07_annotate.py --prepare` "
+                "di laptop ini."
+            )
+        stats = face_stats.get(str(utterance_id))
+        if stats is not None:
+            multi, dominant = stats
+            detail = f"2+ wajah di {multi:.0%} frame · wajah dominan {dominant:.0%}"
+            if multi > 0.35 or dominant < 0.5:
+                st.warning(f"{detail} — pastikan yang dipotong memang penutur.")
+            else:
+                st.caption(detail)
 
     def text_block() -> None:
         if existing is not None:
@@ -782,6 +889,11 @@ def main(argv: list[str] | None = None) -> int:
         "--crf", type=int, default=30, help="kualitas x264, makin besar makin kecil"
     )
     parser.add_argument("--force", action="store_true", help="potong ulang preview yang ada")
+    parser.add_argument(
+        "--no-faces",
+        action="store_true",
+        help="lewati strip wajah 3 titik (lebih cepat, tetapi anotator tak melihat wajah model)",
+    )
     parser.add_argument("--limit", type=int, default=None, help="batasi jumlah adegan")
     args = parser.parse_args(argv)
 

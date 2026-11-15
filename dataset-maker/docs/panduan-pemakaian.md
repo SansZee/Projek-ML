@@ -241,6 +241,7 @@ src/emosi/             pustaka bersama
 scripts/               skrip per tahap, dijalankan berurutan
 data/                  keluaran tabular (gitignored)
 media/preview/         preview adegan untuk pelabelan (gitignored)
+media/face_preview/    strip wajah 3 titik untuk pelabelan (gitignored)
 media/clips/           klip 720p hasil potong (gitignored)
 media/audio/           audio 16 kHz mono (gitignored)
 media/faces/           wajah 224×224 hasil potong (gitignored)
@@ -783,7 +784,15 @@ sehingga isi `preview/` masuk ke `media/preview/`. Satu adegan sekitar 5 MB,
 jadi bungkus untuk satu orang biasanya 40–60 MB.
 
 Opsi lain: `--force` (potong ulang), `--limit N` (uji cepat), `--scale 480`,
-`--crf 30` (makin besar makin kecil berkasnya).
+`--crf 30` (makin besar makin kecil berkasnya), `--no-faces` (lewati strip
+wajah).
+
+Selain video adegan, `--prepare` membuat **strip wajah**: tiga potongan
+224×224 pada 25/50/75% tiap ujaran, disimpan di
+`media/face_preview/<utterance_id>.jpg`. Strip diambil dari preview, bukan
+film, dengan detektor dan margin yang sama seperti `10_cut.py`; anotator
+memakainya untuk melihat wajah yang akan diterima model. Biayanya ±0,4 detik
+per ujaran (1.373 ujaran ±8 menit, sekali saja) dan ±50 KB per berkas.
 
 Preview 480p cukup untuk klip di kolom kiri, tetapi terlihat lembut kalau
 diperbesar ke layar penuh. Kalau wajah perlu dinilai dari dekat, potong ulang
@@ -816,6 +825,16 @@ dari `media/preview/`. Alurnya:
 
 Tombol kelas diberi warna tetap (senang, sedih, marah, takut, netral) supaya
 mata bisa memilih tanpa membaca ulang, dan legenda warnanya ada di sidebar.
+
+Di bawah video ada **strip wajah**: tiga potongan pada 25/50/75% ujaran, yaitu
+wajah yang benar-benar dipakai model, bukan sembarang wajah di adegan. Tile
+abu-abu berarti tidak ada wajah terdeteksi di titik itu. Caption di bawahnya
+menyebut `2+ wajah di X% frame` dan porsi wajah dominan; kalau angkanya tinggi,
+periksa apakah yang dipotong memang penutur. Kalau bukan, tekan `0`.
+
+Ini penting karena `10_cut.py` memilih wajah terbesar di tiap frame. Pada
+adegan dua orang, wajah terbesar bisa wajah pendengar — dan tanpa strip,
+anotator tidak punya cara mengetahuinya.
 
 Kalau wajah perlu dinilai dari dekat, nyalakan **Video penuh** di sidebar:
 video memakai seluruh lebar layar dan teks pindah ke bawahnya, dengan

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import subprocess
 import tempfile
+import warnings
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,6 +43,26 @@ class FaceSettings:
     cluster_threshold: float = 0.42
     cluster_min_utterances: int = 3
     device: str = "auto"
+
+
+def settings_from_config(cfg: Any, *, sample_fps: float | None = None) -> FaceSettings:
+    """Susun FaceSettings dari ``config.yaml``."""
+    return FaceSettings(
+        model_pack=str(cfg.get("face.model_pack")),
+        det_size=int(cfg.get("face.det_size")),
+        det_thresh=float(cfg.get("face.det_thresh")),
+        sample_fps=float(
+            sample_fps if sample_fps is not None else cfg.get("face.sample_fps")
+        ),
+        frame_width=int(cfg.get("face.frame_width")),
+        min_face_px=int(cfg.get("face.min_face_px")),
+        dominance_min_ratio=float(cfg.get("face.dominance_min_ratio")),
+        min_face_frames=int(cfg.get("face.min_face_frames")),
+        face_ratio_ok=float(cfg.get("face.face_ratio_ok")),
+        cluster_threshold=float(cfg.get("face.cluster_threshold")),
+        cluster_min_utterances=int(cfg.get("face.cluster_min_utterances")),
+        device=str(cfg.get("face.device")),
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -410,6 +431,13 @@ def cluster_embeddings(
 
 def build_analyzer(settings: FaceSettings) -> tuple[Any, str]:
     """Siapkan RetinaFace + ArcFace. Mengembalikan (analyzer, nama provider)."""
+    # Peringatan deprecasi dari dalam insightface, bukan dari kode kita. Tanpa
+    # filter ini, setiap frame menulis dua baris dan progress bar jadi rusak.
+    warnings.filterwarnings(
+        "ignore",
+        message=r".*`estimate` is deprecated.*",
+        category=FutureWarning,
+    )
     try:
         import onnxruntime as ort
         from insightface.app import FaceAnalysis

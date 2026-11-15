@@ -85,6 +85,7 @@ data/merged/           katalog gabungan semua anggota (gitignored)
 kiriman/               zip serah-terima antar-anggota (gitignored)
 media/                 media turunan (gitignored)
 media/preview/         preview adegan 480p untuk pelabelan (gitignored)
+media/face_preview/    strip 3 wajah per ujaran untuk pelabelan (gitignored)
 media/clips/           klip 720p, audio, wajah (gitignored)
 ```
 
