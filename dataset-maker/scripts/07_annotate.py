@@ -35,7 +35,7 @@ Anotator memakainya untuk memastikan wajah yang dinilai memang penutur.
 
 Tugas setiap orang:
 
-  milik    seluruh adegan terpilih di film yang ada di laptopnya
+  milik    blok utama: adegan terpilih, bisa dari film sendiri atau orang lain
   gold     dua adegan yang dinilai semua orang, untuk kappa global
   silang   150 ujaran milik orang lain, satu set per pemilik film
 
@@ -88,7 +88,13 @@ def run_assign(cfg: Config, args) -> int:
     pool = pd.read_csv(pool_path)
     try:
         assignments = annotate.build_assignments(
-            pool, people=people, gold=args.gold, cross=args.cross, seed=args.seed
+            pool,
+            people=people,
+            gold=args.gold,
+            cross=args.cross,
+            seed=args.seed,
+            balance=args.balance,
+            existing=annotate.labeled_scenes(data_dir) if args.balance else None,
         )
     except annotate.AssignmentError as error:
         print(f"Penugasan gagal: {error}")
@@ -129,7 +135,7 @@ def run_assign(cfg: Config, args) -> int:
     print(f"penugasan → {out}")
     print()
     print("Kirim data/pool.csv, data/pool_scenes.csv, dan data/assignments.csv ke")
-    print("semua anotator. Ketiganya kecil (di bawah 1 MB).")
+    print("semua anotator. Ketiganya di bawah 4 MB.")
     return 0
 
 
@@ -870,6 +876,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gold", type=int, default=2, help="jumlah adegan gold set")
     parser.add_argument("--cross", type=int, default=150, help="ujaran tukar silang per orang")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--balance",
+        action="store_true",
+        help="bagi blok utama rata per adegan, bukan semua film ke pemiliknya",
+    )
     parser.add_argument("--pool", default=None, help="path pool.csv (default data/pool.csv)")
     parser.add_argument(
         "--prepare", action="store_true", help="potong preview adegan yang ada di laptop ini"

@@ -192,6 +192,64 @@ def choose_source(
     )
 
 
+def labeled_scenes(data_dir: Path) -> dict[str, set[str]]:
+    """Adegan yang sudah punya label, per anotator.
+
+    Dipakai ``--assign --balance`` supaya pekerjaan yang sudah berjalan tidak
+    dipindah ke orang lain saat beban dibagi ulang.
+    """
+    result: dict[str, set[str]] = {}
+    for path in sorted(Path(data_dir).glob("labels_*.csv")):
+        frame = pd.read_csv(path)
+        if frame.empty or "scene_id" not in frame.columns:
+            continue
+        name = (
+            str(frame["annotator"].iloc[0])
+            if "annotator" in frame.columns
+            else path.stem.removeprefix("labels_")
+        )
+        result.setdefault(name, set()).update(frame["scene_id"].astype(str))
+    return result
+
+
+def scene_choice(
+    planned: pd.DataFrame,
+    roster: list[str],
+    *,
+    existing: dict[str, set[str]] | None = None,
+) -> dict[str, str]:
+    """Bagikan adegan ke anotator supaya jumlah ujarannya rata.
+
+    Adegan tidak pernah dipecah: satu adegan dinilai satu orang. Adegan yang
+    sudah punya label tetap pada pelabelnya, berapa pun bebannya.
+    """
+    grouped = (
+        planned.groupby(["film_id", "owner", "scene_id"], as_index=False)
+        .size()
+        .rename(columns={"size": "n_utterances"})
+    )
+    pinned: dict[str, str] = {}
+    for person, scenes in (existing or {}).items():
+        if person not in roster:
+            continue
+        for scene in scenes:
+            pinned.setdefault(str(scene), person)
+
+    load = {person: 0 for person in roster}
+    choice: dict[str, str] = {}
+    for row in grouped.sort_values("n_utterances", ascending=False, kind="stable").itertuples():
+        scene = str(row.scene_id)
+        person = pinned.get(scene)
+        if person is None:
+            person = min(
+                roster,
+                key=lambda name: (load[name], name != str(row.owner), name),
+            )
+        choice[scene] = person
+        load[person] += int(row.n_utterances)
+    return choice
+
+
 def build_assignments(
     pool: pd.DataFrame,
     *,
@@ -199,14 +257,20 @@ def build_assignments(
     gold: int = 2,
     cross: int = 150,
     seed: int = 42,
+    balance: bool = False,
+    existing: dict[str, set[str]] | None = None,
 ) -> pd.DataFrame:
     """Susun tugas semua anotator dari kolam yang sudah lolos QC.
 
     Tiga jenis tugas:
 
-      milik    seluruh adegan terpilih di film yang ada di laptop sendiri
+      milik    blok utama: seluruh adegan terpilih, biasanya film sendiri
       gold     dua adegan yang dinilai semua orang, untuk kappa global
       silang   150 ujaran milik orang lain, satu set per pemilik film
+
+    Dengan ``balance=True`` blok utama dibagi rata per adegan, jadi satu orang
+    tidak menanggung semua filmnya sendiri. Adegan yang sudah dilabeli tetap
+    pada pelabelnya lewat ``existing``.
 
     Setiap ujaran hanya muncul sekali per anotator. Prioritasnya milik → gold →
     silang, karena tugas milik yang paling lengkap.
@@ -231,20 +295,36 @@ def build_assignments(
     rows: list[dict] = []
     own_ids: dict[str, set[str]] = {person: set() for person in roster}
 
-    for film_id, group in planned.groupby("film_id", sort=True):
-        owner = str(group["owner"].iloc[0])
-        for row in group.itertuples():
+    if balance:
+        chosen = scene_choice(planned, roster, existing=existing)
+        for row in planned.itertuples():
+            person = chosen[str(row.scene_id)]
             rows.append(
                 {
-                    "annotator": owner,
+                    "annotator": person,
                     "role": ROLE_OWN,
-                    "film_id": str(film_id),
-                    "owner": owner,
+                    "film_id": str(row.film_id),
+                    "owner": str(row.owner),
                     "scene_id": str(row.scene_id),
                     "utterance_id": str(row.utterance_id),
                 }
             )
-            own_ids[owner].add(str(row.utterance_id))
+            own_ids[person].add(str(row.utterance_id))
+    else:
+        for film_id, group in planned.groupby("film_id", sort=True):
+            owner = str(group["owner"].iloc[0])
+            for row in group.itertuples():
+                rows.append(
+                    {
+                        "annotator": owner,
+                        "role": ROLE_OWN,
+                        "film_id": str(film_id),
+                        "owner": owner,
+                        "scene_id": str(row.scene_id),
+                        "utterance_id": str(row.utterance_id),
+                    }
+                )
+                own_ids[owner].add(str(row.utterance_id))
 
     gold_scenes = pick_gold_scenes(planned, gold, seed=seed)
     gold_set = set(gold_scenes)

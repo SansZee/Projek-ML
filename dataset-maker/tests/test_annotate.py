@@ -69,6 +69,51 @@ def test_gold_scenes_are_labeled_by_everyone_but_owner_keeps_own_role():
     assert set(owner_rows["role"]) == {annotate.ROLE_OWN}
 
 
+def test_balanced_assignments_split_scenes_not_people_fairly():
+    pool = make_pool(
+        films=[
+            ("AAA01", "kesan", "romansa"),
+            ("BBB02", "budi", "horor"),
+            ("CCC03", "budi", "horor"),
+            ("DDD04", "budi", "horor"),
+        ],
+        scenes=4,
+        per_scene=10,
+    )
+    assignments = annotate.build_assignments(
+        pool, people=["kesan", "budi"], gold=0, cross=5, balance=True
+    )
+    own = assignments[assignments["role"] == annotate.ROLE_OWN]
+
+    assert own.groupby("scene_id")["annotator"].nunique().max() == 1
+    load = own.groupby("annotator").size().to_dict()
+    assert set(load) == {"kesan", "budi"}
+    assert max(load.values()) - min(load.values()) <= 10
+    assert own.groupby("scene_id")["owner"].first().nunique() == 2
+
+
+def test_balanced_assignments_keep_labeled_scenes_with_their_labeler():
+    pool = make_pool(
+        films=[("AAA01", "kesan", "romansa"), ("BBB02", "budi", "horor")],
+        scenes=4,
+        per_scene=10,
+    )
+    scene = "BBB02-S004"
+    assignments = annotate.build_assignments(
+        pool,
+        people=["kesan", "budi"],
+        gold=0,
+        cross=5,
+        balance=True,
+        existing={"kesan": {scene}},
+    )
+    own = assignments[
+        (assignments["role"] == annotate.ROLE_OWN) & (assignments["scene_id"] == scene)
+    ]
+    assert set(own["annotator"]) == {"kesan"}
+    assert set(own["owner"]) == {"budi"}
+
+
 def test_cross_rows_come_from_someone_else_and_have_fixed_size():
     pool = make_pool()
     assignments = annotate.build_assignments(

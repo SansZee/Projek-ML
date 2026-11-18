@@ -722,40 +722,46 @@ Tiga peran:
 ### 7.1 Membagi tugas
 
 ```bash
-uv run python scripts/07_annotate.py --assign --people kesan,budi,ani,dina
+uv run python scripts/07_annotate.py --assign --people kesan,bagus,maul,michael --balance
 ```
+
+`--balance` membagi blok utama **per adegan** supaya bebannya rata; tanpa itu
+semua film jatuh ke pemiliknya, dan orang yang membawa 9 film menanggung
+setengah pekerjaan. Adegan tidak pernah dipecah, dan adegan yang sudah punya
+label tetap pada pelabelnya (dibaca dari `data/labels_*.csv`).
 
 Menulis `data/assignments.csv` dengan tiga jenis tugas:
 
 | Peran | Isi | Tujuan |
 |---|---|---|
-| `milik` | semua adegan terpilih di film yang ada di laptop sendiri | mengisi kuota |
+| `milik` | blok utama: adegan terpilih, bisa film sendiri atau film orang lain | mengisi kuota |
 | `gold` | dua adegan yang dinilai **semua** orang | kappa global |
 | `silang` | 150 ujaran milik orang lain | kappa antarpasangan |
 
 Adegan gold dipilih yang cukup berisi (≥ 8 ujaran) dan, kalau ada, dari genre
 langka. Tukar silang memakai **satu set per pemilik film**: semua orang yang
 menilai film itu memakai 150 ujaran yang sama, jadi kappa bisa dibandingkan
-berpasangan.
+berpasangan. Satu orang yang kebetulan memegang adegan gold sebagai blok utama
+tidak menilai ulang adegan itu sebagai gold, jadi gold dinilai tiga orang.
 
 Ujaran yang sama tidak muncul dua kali untuk satu anotator: prioritasnya
 `milik` → `gold` → `silang`.
 
-Hasil pada pilot (tiga film, semuanya di laptop kesan):
+Hasil pada katalog 19 film:
 
 | Anotator | milik | gold | silang | total |
 |---|---:|---:|---:|---:|
-| kesan | 1.373 | 0 | 0 | 1.373 |
-| budi | 0 | 54 | 150 | 204 |
-| ani | 0 | 54 | 150 | 204 |
-| dina | 0 | 54 | 150 | 204 |
+| kesan | 2.271 | 38 | 98 | 2.407 |
+| maul | 2.271 | 38 | 118 | 2.427 |
+| bagus | 2.271 | 0 | 111 | 2.382 |
+| michael | 2.271 | 38 | 150 | 2.459 |
 
-Kesan tidak punya tugas silang karena tidak ada film orang lain di katalog.
-Kappa tetap bisa dihitung: gold set dinilai semua orang, dan ketiga penilai
-lain memakai set 150 ujaran yang sama dari film kesan.
+Blok utama kini lintas film, jadi preview yang dibutuhkan seseorang tidak lagi
+sama dengan film miliknya. Pemilik film tetap yang memotong preview, lalu
+mengirimnya lewat `--prepare --zip <nama>`.
 
 Kirim `data/pool.csv`, `data/pool_scenes.csv`, dan `data/assignments.csv` ke
-semua anotator. Ketiganya di bawah 1 MB.
+semua anotator. Ketiganya di bawah 4 MB.
 
 ### 7.2 Memotong preview adegan
 

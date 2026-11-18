@@ -13,15 +13,21 @@ Empat orang, nama harus persis: `kesan`, `bagus`, `maul`, `michael`.
 
 | Orang | Tugas | Jumlah klik |
 |---|---|---|
-| kesan | milik 4 film + gold + 150 silang | 2.015 |
-| maul | milik 4 film + gold + 150 silang | 2.049 |
-| bagus | milik 2 film + gold + 150 silang | 1.115 |
-| michael | milik 9 film + 150 silang | 4.619 |
+| kesan | blok utama + gold + silang | 2.407 |
+| maul | blok utama + gold + silang | 2.427 |
+| bagus | blok utama + silang | 2.382 |
+| michael | blok utama + gold + silang | 2.459 |
 
-Michael tidak dapat tugas gold karena dua adegan gold kebetulan dari filmnya,
-dan orang tidak menilai film sendiri. Kalau beban Michael terasa terlalu
-berat, **bilang ke koordinator sebelum mulai** — setelah sesi berjalan,
-pembagian tidak diubah lagi.
+Blok utama dibagi **per adegan**, jadi bisa berisi film orang lain. Yang
+menentukan bukan siapa pemilik film, melainkan siapa yang mendapat adegan itu.
+Adegan tidak pernah dipecah antar-orang.
+
+Gold dinilai tiga orang. Satu orang yang kebetulan memegang adegan gold sebagai
+blok utama tidak menilai ulang adegan itu (di katalog ini: bagus), jadi angka
+gold-nya 0 — itu normal, bukan tugas yang hilang.
+
+Pembagian ini sudah final. Kalau di tengah jalan diubah, peran berpindah dan
+label yang sudah ada tidak cocok lagi.
 
 ## 2. Yang dikirim koordinator
 
@@ -40,8 +46,13 @@ dengan:
 uv run python scripts/07_annotate.py --prepare --zip <namamu>
 ```
 
-Hasilnya `kiriman/preview-untuk-<namamu>-<tanggal>.zip` (±40–60 MB). Ekstrak
-sehingga isinya masuk ke `media/preview/`.
+Hasilnya `kiriman/preview-untuk-<namamu>-<tanggal>.zip` (±40–60 MB per
+pengiriman). Ekstrak sehingga isinya masuk ke `media/preview/`.
+
+Blok utama dibagi rata, jadi adeganmu bisa berasal dari beberapa film
+sekaligus. Totalnya sekitar 130 adegan (±700 MB), dan pemilik tiap film harus
+mengirim zip-nya kepadamu. Minta semua sebelum mulai, supaya sesi tidak
+terhenti di tengah.
 
 ## 3. Persiapan laptop (sekali saja)
 
