@@ -101,6 +101,20 @@ def audition_passed(films: pd.DataFrame) -> pd.Series:
     return films["pass_audition"].astype(str).str.lower().isin(("true", "1", "yes"))
 
 
+def audition_conflicts(films: pd.DataFrame) -> list[str]:
+    """Film yang ditandai lolos padahal alasan gugurnya masih terisi.
+
+    Terjadi kalau ``pass_audition`` diubah manual tanpa membersihkan
+    ``reject_reason``; tanpa peringatan, film yang gagal protokol masuk
+    katalog tanpa jejak.
+    """
+    if "reject_reason" not in films.columns:
+        return []
+    reason = films["reject_reason"].fillna("").astype(str).str.strip()
+    mask = audition_passed(films) & reason.ne("")
+    return sorted(films.loc[mask, "film_id"].astype(str))
+
+
 def pack_files(data_dir: Path) -> list[Path]:
     """Berkas yang ikut dalam kiriman.
 
@@ -427,6 +441,16 @@ def validate(
             )
 
         films = contributor.table("films.csv")
+        conflicted = audition_conflicts(films)
+        if conflicted:
+            problems.append(
+                Problem(
+                    "warning",
+                    f"{contributor.owner}: pass_audition=true tetapi reject_reason "
+                    f"masih terisi untuk {', '.join(conflicted)}; "
+                    "bersihkan alasan itu kalau memang dipakai",
+                )
+            )
         films = films[audition_passed(films)]
         faces = contributor.table("faces.csv")
         utterances = contributor.table("utterances.csv")

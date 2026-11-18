@@ -4,6 +4,9 @@ Panduan ini menjelaskan cara memakai pipeline dari nol sampai data siap
 digabung. Tulisannya untuk empat orang yang bekerja di laptop masing-masing,
 bukan hanya untuk satu mesin.
 
+Untuk fase pelabelan saja, pakai ringkasan `docs/langkah-anotasi.md` — itu yang
+bisa langsung dikirim ke grup.
+
 Status tahap per tulisan ini:
 
 | Skrip | Status | Keterangan |

@@ -269,6 +269,20 @@ def test_rejected_film_without_embedding_does_not_block_pack_or_merge(tmp_path):
     assert set(merged.embeddings) == {"AAA01"}
 
 
+def test_audition_conflicts_flags_passed_film_with_reason():
+    films = pd.DataFrame(
+        [
+            {"film_id": "AAA01", "pass_audition": True, "reject_reason": "wajah_jarang:0.30"},
+            {"film_id": "BBB02", "pass_audition": False, "reject_reason": "snr_rendah:12"},
+            {"film_id": "CCC03", "pass_audition": True, "reject_reason": None},
+            {"film_id": "DDD04", "pass_audition": "True", "reject_reason": "  "},
+        ]
+    )
+
+    assert merge.audition_conflicts(films) == ["AAA01"]
+    assert merge.audition_conflicts(films.drop(columns="reject_reason")) == []
+
+
 def test_cross_film_candidates_only_pairs_different_films():
     same = np.array([1.0, 0.0, 0.0], dtype=np.float32)
     near = np.array([0.99, 0.1, 0.0], dtype=np.float32)

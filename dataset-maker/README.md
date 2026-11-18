@@ -103,3 +103,4 @@ media/clips/           klip 720p, audio, wajah (gitignored)
 
 Panduan langkah demi langkah ada di **`docs/panduan-pemakaian.md`**.
 Pembagian kerja empat orang ada di `docs/koordinasi.md`.
+Langkah fase pelabelan yang bisa langsung dikirim ke grup: **`docs/langkah-anotasi.md`**.

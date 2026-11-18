@@ -291,10 +291,10 @@ def run_prepare(cfg: Config, args) -> int:
                 )
             )
 
-    if not args.no_faces and jobs:
+    if not args.no_faces:
         build_face_strips(
             cfg,
-            {scene_id for _, scene_id, _, _, _ in jobs},
+            {str(value) for value in needs["scene_id"]},
             times,
             force=args.force,
         )
@@ -458,15 +458,6 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     data_dir = cfg.resolve("paths.data_dir")
     preview_dir = cfg.resolve("paths.media_dir") / "preview"
     face_dir = cfg.resolve("paths.media_dir") / "face_preview"
-    face_stats: dict[str, tuple[float, float]] = {}
-    faces_path = data_dir / "faces.csv"
-    if faces_path.exists():
-        faces = pd.read_csv(faces_path)
-        for row in faces.itertuples():
-            face_stats[str(row.utterance_id)] = (
-                float(row.multi_face_share),
-                float(row.dominant_share),
-            )
 
     pool_path = data_dir / POOL
     assignment_path = data_dir / ASSIGNMENTS
@@ -544,6 +535,8 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
                 "duration_s",
                 "index",
                 "title",
+                "multi_face_share",
+                "dominant_share",
             ]
         ],
         on="utterance_id",
@@ -710,9 +703,12 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
                 "Strip wajah belum ada — jalankan `07_annotate.py --prepare` "
                 "di laptop ini."
             )
-        stats = face_stats.get(str(utterance_id))
-        if stats is not None:
-            multi, dominant = stats
+        stats = (
+            current.get("multi_face_share"),
+            current.get("dominant_share"),
+        )
+        if pd.notna(stats[0]) and pd.notna(stats[1]):
+            multi, dominant = float(stats[0]), float(stats[1])
             detail = f"2+ wajah di {multi:.0%} frame · wajah dominan {dominant:.0%}"
             if multi > 0.35 or dominant < 0.5:
                 st.warning(f"{detail} — pastikan yang dipotong memang penutur.")

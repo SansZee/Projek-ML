@@ -80,3 +80,40 @@ dikumpulkan sesuai kebutuhan eksperimen.
 3. **Seleksi dilakukan per orang** → kuota kelas habis di film yang sama.
 4. **Label berubah setelah eksperimen dimulai** → semua hasil harus diulang.
 5. **Tukar silang ditunda** → kappa tidak ada, bab evaluasi kehilangan satu bagian.
+
+## Pengecualian audisi — 18 November 2026
+
+Sembilan film milik Michael ditandai lolos padahal pemeriksaan film gagal.
+Keputusan tim: **diterima sebagai pengecualian**, karena QC per ujaran (tahap 06)
+mengukur hal yang lebih relevan — wajah pada momen dialog, bukan rata-rata
+lima jendela 60 detik yang kebetulan terpilih.
+
+| Film | wajah | wpm | alasan di reject_log |
+|---|---|---|---|
+| GTO17 Get Out | 0,27 | 71 | wajah + wpm |
+| HRD18 Hereditary | 0,17 | 48 | wajah + wpm |
+| MSR90 Misery | 0,50 | 70 | wpm |
+| NCF07 No Country for Old Men | 0,33 | 58 | wajah + wpm |
+| NGC14 Nightcrawler | 0,32 | 100 | wajah |
+| PRS13 Prisoners | 0,19 | 66 | wajah + wpm |
+| SHN80 The Shining | 0,34 | 60 | wajah + wpm |
+| SLM91 The Silence of the Lambs | 0,40 | 75 | wajah + wpm + snr |
+| SVN95 Se7en | 0,13 | 83 | wajah + snr |
+
+Tindakan yang sudah dilakukan: `reject_reason` dikosongkan di `films.csv` dan
+sembilan baris itu dihapus dari `reject_log.csv` kiriman Michael, supaya
+katalog dan log tidak saling bertentangan.
+
+Catatan penting untuk laporan:
+
+- SLM91 dan SVN95 tetap menyumbang **0 ujaran** karena SNR film 14,8 dan 13,2
+  di bawah ambang QC 15. Keduanya tidak masuk dataset, hanya tidak lagi
+  dihitung sebagai "ditolak".
+- Film-film ini punya `face_ratio` film di bawah 0,50. Kanal wajah di sana
+  harus dilaporkan sebagai keterbatasan, dan sebaiknya hasil per modalitas
+  dipisah saat evaluasi.
+
+Aturan ke depan: pengecualian seperti ini hanya sah kalau dicatat di bagian ini
+(tanggal, film, angka, alasan), dan kalau QC per ujaran tetap dijalankan.
+Mengubah `pass_audition` tanpa menghapus `reject_reason` sekarang memunculkan
+peringatan saat merge.

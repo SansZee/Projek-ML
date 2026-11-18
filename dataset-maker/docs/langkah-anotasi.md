@@ -1,0 +1,143 @@
+# Langkah Anotasi
+
+Satu halaman untuk fase pelabelan. Yang sudah selesai: 19 film digabung, QC
+jalan, dan `data/assignments.csv` sudah dibuat. Tidak ada yang perlu di-merge
+atau di-QC lagi.
+
+Aturan lengkap tiap kelas ada di `docs/label_guideline.md`. Panduan teknis
+lengkap ada di `docs/panduan-pemakaian.md` §7.
+
+## 1. Siapa mengerjakan apa
+
+Empat orang, nama harus persis: `kesan`, `bagus`, `maul`, `michael`.
+
+| Orang | Tugas | Jumlah klik |
+|---|---|---|
+| kesan | milik 4 film + gold + 150 silang | 2.015 |
+| maul | milik 4 film + gold + 150 silang | 2.049 |
+| bagus | milik 2 film + gold + 150 silang | 1.115 |
+| michael | milik 9 film + 150 silang | 4.619 |
+
+Michael tidak dapat tugas gold karena dua adegan gold kebetulan dari filmnya,
+dan orang tidak menilai film sendiri. Kalau beban Michael terasa terlalu
+berat, **bilang ke koordinator sebelum mulai** — setelah sesi berjalan,
+pembagian tidak diubah lagi.
+
+## 2. Yang dikirim koordinator
+
+Tiga berkas, taruh di `data/`:
+
+```
+data/assignments.csv
+data/pool.csv
+data/pool_scenes.csv
+```
+
+Plus preview untuk adegan yang bukan milikmu. Preview dibuat pemilik film
+dengan:
+
+```bash
+uv run python scripts/07_annotate.py --prepare --zip <namamu>
+```
+
+Hasilnya `kiriman/preview-untuk-<namamu>-<tanggal>.zip` (±40–60 MB). Ekstrak
+sehingga isinya masuk ke `media/preview/`.
+
+## 3. Persiapan laptop (sekali saja)
+
+```bash
+git clone <repo> dataset-maker
+cd dataset-maker
+uv sync --locked --extra asr --extra face --extra label
+uv run python -m emosi.bootstrap --verify
+```
+
+Windows: PowerShell, dan `insightface` butuh Build Tools — lihat
+`docs/panduan-pemakaian.md` §2.
+
+Sebut **ketiga** extra. `--extra label` saja mencabut `face` dan `asr`, dan
+strip wajah tidak bisa dibuat.
+
+## 4. Siapkan preview dan strip wajah
+
+Kalau filmmu ada di laptop ini, potong preview untuk adegan yang dibutuhkan
+orang lain lalu kirim:
+
+```bash
+uv run python scripts/07_annotate.py --prepare --zip bagus
+```
+
+Untuk dirimu sendiri, setelah semua preview terkumpul di `media/preview/`
+(termasuk yang dikirim orang lain):
+
+```bash
+uv run python scripts/07_annotate.py --prepare
+```
+
+Perintah ini juga membuat **strip wajah** di `media/face_preview/`. Film asli
+tidak diperlukan — cukup preview. Biayanya ±0,4 detik per ujaran.
+
+## 5. Buka aplikasi dan mulai
+
+```bash
+uv run streamlit run scripts/07_annotate.py
+```
+
+Browser terbuka di `http://localhost:8501`. Pilih namamu di sidebar, pilih
+adegan, lalu nilai ujaran satu per satu.
+
+Cara kerjanya:
+
+- video di kiri, transkrip dan keyakinan di kanan;
+- di bawah video ada **strip 3 wajah** — itulah wajah yang akan diterima model;
+- pintasan papan ketik: `1`–`5` kelas, `6` ambigu, `0` tidak layak;
+- setiap klik langsung tersimpan dan pindah ke ujaran berikutnya;
+- sesi boleh ditutup kapan saja, besok lanjut dari yang belum.
+
+Aturan singkat:
+
+| Tombol | Kapan |
+|---|---|
+| `1`–`5` | emosi penutur terbaca jelas |
+| `6` ambigu | sinyal ada tapi bertentangan, tidak ada yang dominan |
+| `0` tidak layak | wajah salah orang/tertutup, audio rusak, subtitle tidak cocok |
+
+Strip yang menampilkan **orang berbeda di tiga tile** berarti wajah terbesar
+berpindah di tengah ujaran — itu `0`. Wajah orang lain yang cuma numpang di
+pojok crop bukan alasan `0`, selama wajah utama adalah penutur.
+
+## 6. Setelah selesai
+
+Kirim satu berkas ke koordinator:
+
+```
+data/labels_<namamu>.csv
+```
+
+Jangan menggabungkan dengan berkas orang lain. `08_agree.py` mencocokkan
+berdasarkan kolom `annotator`.
+
+## 7. Kalau ada masalah
+
+| Gejala | Penyebab | Perbaikan |
+|---|---|---|
+| `No module named 'streamlit'` | extra `label` belum ada | `uv sync --locked --extra asr --extra face --extra label` |
+| `No module named 'cv2'` | sync tanpa `face` | sync ulang dengan ketiga extra |
+| `Preview … belum ada` | zip preview belum diekstrak | ekstrak ke `media/preview/` |
+| `Strip wajah belum ada` | `--prepare` belum jalan setelah preview lengkap | ulangi langkah 4 |
+| `bad interpreter` | checkout CRLF | `git rm --cached -r .` lalu `git reset --hard` |
+| nama tidak muncul di sidebar | salah ketik nama | harus `kesan`, `bagus`, `maul`, `michael` |
+
+## 8. Khusus yang memakai Kaggle
+
+Kaggle hanya untuk tahap 00–04, yang sudah selesai. **Melabeli tidak bisa di
+Kaggle** karena Streamlit butuh server yang dibuka di browser.
+
+Sebelum sesi Kaggle ditutup, unduh dari `/kaggle/working`:
+
+- `kiriman/<nama>-<tanggal>.zip` (data),
+- zip preview: `kiriman/preview-untuk-*.zip` dari `--prepare --zip`.
+
+Setelah sesi berakhir, isi `/kaggle/working` hilang. Di Kaggle, potong preview
+dengan `--prepare --no-faces` (tidak perlu insightface); strip wajah dibuat di
+laptop pada langkah 4.

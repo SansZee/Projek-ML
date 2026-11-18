@@ -62,6 +62,8 @@ POOL_COLUMNS = [
     "timing",
     "n_cues",
     "face_ratio",
+    "dominant_share",
+    "multi_face_share",
     "emb_frames",
     "actor_key",
     "genre",
@@ -72,7 +74,14 @@ POOL_COLUMNS = [
     "label_plan",
 ]
 
-_FACE_COLUMNS = ("utterance_id", "face_ratio", "emb_frames", "actor_key")
+_FACE_COLUMNS = (
+    "utterance_id",
+    "face_ratio",
+    "emb_frames",
+    "actor_key",
+    "dominant_share",
+    "multi_face_share",
+)
 _FILM_COLUMNS = ("film_id", "owner", "title", "genre", "snr_db", "clip_ratio")
 _DEFAULTS: dict[str, Any] = {
     "owner": "",
@@ -188,10 +197,11 @@ def evaluate(
         how="left",
         validate="one_to_one",
     )
-    # face_ratio dibiarkan NaN kalau barisnya tidak ada, supaya "tanpa wajah"
+    # Nilai wajah dibiarkan NaN kalau barisnya tidak ada, supaya "tanpa wajah"
     # tidak tertukar dengan "wajahnya sedikit".
-    if "face_ratio" not in frame.columns:
-        frame["face_ratio"] = np.nan
+    for column in ("face_ratio", "dominant_share", "multi_face_share"):
+        if column not in frame.columns:
+            frame[column] = np.nan
     for column, default in _DEFAULTS.items():
         if column not in frame.columns:
             frame[column] = default
