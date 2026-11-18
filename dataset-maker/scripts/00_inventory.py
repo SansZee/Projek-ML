@@ -187,7 +187,7 @@ def lookup_registry(registry: pd.DataFrame, path: Path) -> tuple[dict, bool]:
     needle = str(path).lower()
     for _, row in registry.iterrows():
         pattern = str(row.get("path_contains") or "").strip().lower()
-        if pattern and pattern in needle:
+        if pattern and pattern != "nan" and pattern in needle:
             return row.to_dict(), True
     return {}, False
 

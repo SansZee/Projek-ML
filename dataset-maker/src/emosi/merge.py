@@ -263,6 +263,18 @@ def load_contributor(entry: Path, *, owner: str | None = None) -> Contributor:
             "Jalankan scripts/05_merge.py --pack di laptop anggota."
         )
 
+    # Kontributor hanya boleh mengirim data untuk film yang tercantum di
+    # films.csv-nya. Tanpa saringan ini, sisa film yang sudah dipindahkan
+    # pemiliknya ikut terbawa dan membuat utterance_id ganda saat digabung.
+    own_films = set(tables["films.csv"]["film_id"].astype(str))
+    for table in ("utterances.csv", "faces.csv", "actors.csv", "scenes.csv"):
+        frame = tables.get(table)
+        if frame is None or frame.empty or "film_id" not in frame.columns:
+            continue
+        keep = frame["film_id"].astype(str).isin(own_films)
+        if not keep.all():
+            tables[table] = frame[keep].reset_index(drop=True)
+
     film_config: dict[str, str] = {}
     meta_key = root + "data/faces/faces_meta.json"
     if meta_key in tree:

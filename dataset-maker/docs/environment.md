@@ -134,6 +134,32 @@ Windows memakai `core.autocrlf=true`. Path panjang diatur sekali dengan
 lama masih bermasalah, checkout ulang: `git rm --cached -r .` lalu
 `git reset --hard`.
 
+## 5b. onnxruntime CPU menimpa GPU
+
+`insightface` bergantung pada `onnxruntime` (CPU), sedangkan GPU memakai
+`onnxruntime-gpu`. Keduanya memasang direktori `onnxruntime/` yang sama, jadi
+yang dipasang terakhir yang menang — dan `uv sync` memasang versi CPU. Gejalanya
+tidak berupa error: tahap 04 hanya mencetak
+`provider onnxruntime: CPUExecutionProvider` lalu berjalan 1–2 jam per film.
+
+Cek:
+
+```bash
+uv run python -c "import onnxruntime as ort; print(ort.__version__, ort.get_available_providers())"
+```
+
+Kalau hanya `CPUExecutionProvider`, pasang ulang GPU:
+
+```bash
+uv pip uninstall onnxruntime onnxruntime-gpu
+uv pip install --no-deps "onnxruntime-gpu==1.22.0"
+```
+
+Hasil yang benar: `1.22.0` dengan `CUDAExecutionProvider` di daftar. `uv run`
+tidak mengembalikan versi CPU, tetapi **`uv sync` mengembalikannya** — jadi
+setiap selesai `uv sync`, ulangi dua perintah di atas sebelum menjalankan
+tahap 04 atau `--prepare` (strip wajah juga memakai detektor ini).
+
 ## 6. Docker (opsional, untuk tim dengan OS campur)
 
 Docker mengunci CUDA, ffmpeg, dan Python sekaligus — satu-satunya cara
@@ -175,7 +201,7 @@ kamu serahkan ke koordinator.
 | `uv sync --locked` gagal "lock is outdated" | `pyproject.toml` berubah tanpa `uv lock` | `uv lock`, commit ulang |
 | `cuda_available = False` | wheel CPU terpasang | cek indeks `cu126`/`cu124`, hapus `.venv`, `uv sync` ulang |
 | `CascadeClassifier` kosong / `cv2` error | OpenCV 5 terpasang (menghapus `CascadeClassifier`) | `uv sync --locked --extra face`; pin `<5` sudah ada di `pyproject.toml` |
-| `provider onnxruntime: CPUExecutionProvider` | libcublas/libcudnn/cudart tidak ditemukan | `uv sync --locked --extra face`, cek `nvidia-smi` |
+| `provider onnxruntime: CPUExecutionProvider` | `onnxruntime` CPU menimpa `onnxruntime-gpu` setelah `uv sync` | lihat bagian 5b; jangan hanya `uv sync` |
 | `ffmpeg tidak ditemukan` | ffmpeg tidak di PATH | pasang, lalu buka ulang shell |
 | `winget: command not found` | Windows 10 lama | perbarui App Installer dari Microsoft Store, atau pasang manual |
 | `ffmpeg`/`ffprobe` masih tidak dikenal setelah winget | PATH belum dimuat | tutup dan buka ulang PowerShell |

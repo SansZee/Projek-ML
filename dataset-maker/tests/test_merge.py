@@ -269,6 +269,20 @@ def test_rejected_film_without_embedding_does_not_block_pack_or_merge(tmp_path):
     assert set(merged.embeddings) == {"AAA01"}
 
 
+def test_contributor_rows_for_foreign_films_are_dropped(tmp_path):
+    root = write_bundle(tmp_path / "budi", "budi", ["AAA01"])
+    path = root / "data" / "utterances.csv"
+    frame = pd.read_csv(path)
+    stray = frame.iloc[[0]].copy()
+    stray["film_id"] = "ZZZ99"
+    stray["utterance_id"] = "ZZZ99-U00001"
+    pd.concat([frame, stray], ignore_index=True).to_csv(path, index=False)
+
+    contributor = merge.load_contributor(root)
+
+    assert set(contributor.table("utterances.csv")["film_id"]) == {"AAA01"}
+
+
 def test_audition_conflicts_flags_passed_film_with_reason():
     films = pd.DataFrame(
         [

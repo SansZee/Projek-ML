@@ -751,14 +751,18 @@ Hasil pada katalog 19 film:
 
 | Anotator | milik | gold | silang | total |
 |---|---:|---:|---:|---:|
-| kesan | 2.271 | 38 | 98 | 2.407 |
-| maul | 2.271 | 38 | 118 | 2.427 |
-| bagus | 2.271 | 0 | 111 | 2.382 |
-| michael | 2.271 | 38 | 150 | 2.459 |
+| kesan | 2.832 | 38 | 150 | 3.020 |
+| maul | 2.832 | 38 | 150 | 3.020 |
+| bagus | 2.832 | 38 | 132 | 3.002 |
+| michael | 2.832 | 38 | 150 | 3.020 |
 
 Blok utama kini lintas film, jadi preview yang dibutuhkan seseorang tidak lagi
 sama dengan film miliknya. Pemilik film tetap yang memotong preview, lalu
 mengirimnya lewat `--prepare --zip <nama>`.
+
+Adegan gold tidak dimasukkan ke blok utama siapa pun, sehingga keempat orang
+menilai 38 ujaran gold yang sama. Itu syarat kappa global; kalau pemiliknya
+menilainya sebagai `milik`, set gold tiap orang jadi berbeda.
 
 Kirim `data/pool.csv`, `data/pool_scenes.csv`, dan `data/assignments.csv` ke
 semua anotator. Ketiganya di bawah 4 MB.
@@ -1154,7 +1158,7 @@ menggabungkan berdasarkan kolom `annotator`.
 | `uv sync --locked` gagal "lock is outdated" | `pyproject.toml` berubah tanpa `uv lock` | `uv lock`, commit ulang, minta semua orang sync |
 | `ffmpeg tidak ditemukan` | belum terpasang / bukan di PATH | pasang, buka shell baru |
 | `01_asr.py` sangat lambat | GPU tidak terpakai | cek `torch.cuda.is_available()`; lihat `docs/environment.md` |
-| `provider onnxruntime: CPUExecutionProvider` | pustaka CUDA tidak lengkap | `uv sync --locked --extra face`; cek `nvidia-smi` |
+| `provider onnxruntime: CPUExecutionProvider` | `onnxruntime` CPU menimpa GPU | `uv pip uninstall onnxruntime onnxruntime-gpu` lalu `uv pip install --no-deps onnxruntime-gpu==1.22.0` |
 | `CascadeClassifier` kosong / `cv2` error | OpenCV 5 terpasang | `uv sync --locked --extra face` (pin `<5` sudah ada); jangan pasang opencv sendiri |
 | `insightface` gagal dikompilasi (Windows) | butuh compiler C++ | pasang Build Tools (§2.2); kalau tetap gagal, WSL2 |
 | `faces.csv` kosong | film gelap / wajah jarang / frame gagal didekode | cek `faces_meta.json`, jalankan `--scenes 2` untuk uji |

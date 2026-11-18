@@ -49,7 +49,7 @@ def test_own_assignment_covers_every_planned_utterance():
         assert got == expected
 
 
-def test_gold_scenes_are_labeled_by_everyone_but_owner_keeps_own_role():
+def test_gold_scenes_are_labeled_by_everyone_as_gold():
     pool = make_pool()
     assignments = annotate.build_assignments(
         pool, people=["kesan", "budi"], gold=1, cross=5
@@ -59,14 +59,15 @@ def test_gold_scenes_are_labeled_by_everyone_but_owner_keeps_own_role():
     scene = gold_scenes.pop()
 
     for person in ("kesan", "budi"):
-        mine = assignments[assignments["annotator"] == person]
-        assert not mine[mine["scene_id"] == scene].empty
+        rows = assignments[
+            (assignments["annotator"] == person) & (assignments["scene_id"] == scene)
+        ]
+        assert set(rows["role"]) == {annotate.ROLE_GOLD}
 
-    owner = pool.loc[pool["scene_id"] == scene, "owner"].iloc[0]
-    owner_rows = assignments[
-        (assignments["annotator"] == owner) & (assignments["scene_id"] == scene)
-    ]
-    assert set(owner_rows["role"]) == {annotate.ROLE_OWN}
+    assert not assignments[
+        (assignments["role"] == annotate.ROLE_OWN)
+        & (assignments["scene_id"] == scene)
+    ].shape[0]
 
 
 def test_balanced_assignments_split_scenes_not_people_fairly():
@@ -112,6 +113,27 @@ def test_balanced_assignments_keep_labeled_scenes_with_their_labeler():
     ]
     assert set(own["annotator"]) == {"kesan"}
     assert set(own["owner"]) == {"budi"}
+
+
+def test_balanced_assignments_prefer_owner_when_two_labeled_the_scene():
+    pool = make_pool(
+        films=[("AAA01", "kesan", "romansa"), ("BBB02", "budi", "horor")],
+        scenes=3,
+        per_scene=10,
+    )
+    assignments = annotate.build_assignments(
+        pool,
+        people=["kesan", "budi"],
+        gold=0,
+        cross=5,
+        balance=True,
+        existing={"budi": {"AAA01-S002"}, "kesan": {"AAA01-S002"}},
+    )
+    own = assignments[
+        (assignments["role"] == annotate.ROLE_OWN)
+        & (assignments["scene_id"] == "AAA01-S002")
+    ]
+    assert set(own["annotator"]) == {"kesan"}
 
 
 def test_cross_rows_come_from_someone_else_and_have_fixed_size():

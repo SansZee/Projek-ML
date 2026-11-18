@@ -117,3 +117,25 @@ Aturan ke depan: pengecualian seperti ini hanya sah kalau dicatat di bagian ini
 (tanggal, film, angka, alasan), dan kalau QC per ujaran tetap dijalankan.
 Mengubah `pass_audition` tanpa menghapus `reject_reason` sekarang memunculkan
 peringatan saat merge.
+
+## Audisi bukan gerbang mutlak — 18 November 2026
+
+Audisi mengambil 5 jendela × 60 detik, yaitu 4% durasi film. Pada katalog ini
+selisih antara rata-rata dan jendela terburuk mencapai 0,43 (500 Days of
+Summer: 0,63 vs 0,20), jadi satu film bisa gugur hanya karena jendelanya jatuh
+di pemandangan. Karena itu keputusan akhir memakai **QC per ujaran** (tahap 04
+dan 06), yang mengukur wajah pada momen dialog.
+
+Dua film yang sebelumnya gugur karena wajah dipertahankan:
+
+| Film | face_ratio audisi | face_ok per ujaran | lolos QC |
+|---|---:|---:|---:|
+| ESS04 Eternal Sunshine | 0,30 | 72% | 69% |
+| PBF12 Perks of Wallflower | 0,45 | 84% | 79% |
+
+La La Land (LLL16) tetap ditolak karena WPM 72, di bawah ambang 80 — itu
+masalah kepadatan dialog, bukan wajah.
+
+Konsekuensi untuk laporan: angka yang dilaporkan adalah `face_ok` per film dari
+`pool.csv`, bukan `face_ratio` audisi. Sebutkan juga bahwa audisi memakai 4%
+durasi dan tidak dipakai sebagai bukti kualitas visual.

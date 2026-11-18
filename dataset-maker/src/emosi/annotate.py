@@ -229,11 +229,17 @@ def scene_choice(
         .rename(columns={"size": "n_utterances"})
     )
     pinned: dict[str, str] = {}
+    scene_owner = {str(row.scene_id): str(row.owner) for row in grouped.itertuples()}
     for person, scenes in (existing or {}).items():
         if person not in roster:
             continue
         for scene in scenes:
-            pinned.setdefault(str(scene), person)
+            key = str(scene)
+            current = pinned.get(key)
+            # Satu adegan bisa punya label dari dua orang (mis. gold/cross di
+            # pilot). Pemilik film diprioritaskan supaya blok utamanya utuh.
+            if current is None or scene_owner.get(key) == person:
+                pinned[key] = person
 
     load = {person: 0 for person in roster}
     choice: dict[str, str] = {}
@@ -295,9 +301,16 @@ def build_assignments(
     rows: list[dict] = []
     own_ids: dict[str, set[str]] = {person: set() for person in roster}
 
+    # Adegan gold dinilai semua orang, jadi tidak dimasukkan ke blok utama.
+    # Tanpa ini, pemiliknya menilai adegan itu sebagai "milik" dan set gold
+    # tiap orang tidak lagi sama — kappa global jadi tidak sebanding.
+    gold_scenes = pick_gold_scenes(planned, gold, seed=seed)
+    gold_set = set(gold_scenes)
+    milik_pool = planned[~planned["scene_id"].astype(str).isin(gold_set)]
+
     if balance:
-        chosen = scene_choice(planned, roster, existing=existing)
-        for row in planned.itertuples():
+        chosen = scene_choice(milik_pool, roster, existing=existing)
+        for row in milik_pool.itertuples():
             person = chosen[str(row.scene_id)]
             rows.append(
                 {
@@ -311,7 +324,7 @@ def build_assignments(
             )
             own_ids[person].add(str(row.utterance_id))
     else:
-        for film_id, group in planned.groupby("film_id", sort=True):
+        for film_id, group in milik_pool.groupby("film_id", sort=True):
             owner = str(group["owner"].iloc[0])
             for row in group.itertuples():
                 rows.append(
@@ -326,8 +339,6 @@ def build_assignments(
                 )
                 own_ids[owner].add(str(row.utterance_id))
 
-    gold_scenes = pick_gold_scenes(planned, gold, seed=seed)
-    gold_set = set(gold_scenes)
     gold_ids: dict[str, set[str]] = {person: set() for person in roster}
     if gold_set:
         gold_rows = planned[planned["scene_id"].astype(str).isin(gold_set)]
