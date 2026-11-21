@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_loads_project_config():
     cfg = load_config(ROOT / "config.yaml")
-    assert cfg.classes() == ["senang", "sedih", "marah", "takut", "netral"]
+    assert cfg.classes() == ["senang", "sedih", "marah", "takut", "netral", "terkejut", "jijik"]
     assert cfg.get("audition.face_ratio_min") == 0.50
     assert len(cfg.sha256) == 64
 

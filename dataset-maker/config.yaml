@@ -172,10 +172,10 @@ qc:
   min_words: 2
 
 # -----------------------------------------------------------------------------
-# Kelas emosi. Ditetapkan sekarang, tidak diubah setelah pelabelan dimulai.
+# Kelas emosi. Ditetapkan bersama tim; ubah serempak di semua laptop.
 # -----------------------------------------------------------------------------
 labels:
-  classes: [senang, sedih, marah, takut, netral]
+  classes: [senang, sedih, marah, takut, netral, terkejut, jijik]
   ambiguous_token: ambigu
   not_eligible_token: tidak_layak
   confidence_min: 1

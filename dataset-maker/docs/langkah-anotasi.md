@@ -101,7 +101,7 @@ Cara kerjanya:
 
 - video di kiri, transkrip dan keyakinan di kanan;
 - di bawah video ada **strip 3 wajah** — itulah wajah yang akan diterima model;
-- pintasan papan ketik: `1`–`5` kelas, `6` ambigu, `0` tidak layak;
+- pintasan papan ketik: `1`–`7` kelas, `8` ambigu, `0` tidak layak;
 - setiap klik langsung tersimpan dan pindah ke ujaran berikutnya;
 - sesi boleh ditutup kapan saja, besok lanjut dari yang belum.
 
@@ -109,8 +109,8 @@ Aturan singkat:
 
 | Tombol | Kapan |
 |---|---|
-| `1`–`5` | emosi penutur terbaca jelas |
-| `6` ambigu | sinyal ada tapi bertentangan, tidak ada yang dominan |
+| `1`–`7` | emosi penutur terbaca jelas |
+| `8` ambigu | sinyal ada tapi bertentangan, tidak ada yang dominan |
 | `0` tidak layak | wajah salah orang/tertutup, audio rusak, subtitle tidak cocok |
 
 Strip yang menampilkan **orang berbeda di tiga tile** berarti wajah terbesar

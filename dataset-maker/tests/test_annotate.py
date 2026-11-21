@@ -311,3 +311,14 @@ def test_progress_counts_only_this_annotator(tmp_path: Path):
     )
     done, total = annotate.progress(labels, assignments, "kesan")
     assert (done, total) == (1, len(mine))
+
+
+def test_video_window_prevents_invalid_streamlit_end_time():
+    # Kasus normal di tengah adegan
+    assert annotate.video_window(14.575, 9.12, 148.732) == (14, 24)
+    # Kasus nyata GBH14-U00079: offset dan batas adegan sama-sama di detik 148
+    assert annotate.video_window(148.095, 3.72, 148.732) == (148, None)
+    # Kasus offset melewati panjang adegan (POH06 / TSR94)
+    assert annotate.video_window(142.370, 2.1, 141.600) == (141, None)
+    # Adegan sangat pendek (< 1 detik)
+    assert annotate.video_window(0.2, 1.5, 0.8) == (0, None)

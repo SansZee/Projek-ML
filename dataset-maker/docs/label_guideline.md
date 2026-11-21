@@ -17,7 +17,9 @@ Tombol di aplikasi:
 | `3` | marah |
 | `4` | takut |
 | `5` | netral |
-| `6` | ambigu — sinyal saling bertentangan, tidak ada yang dominan |
+| `6` | terkejut |
+| `7` | jijik |
+| `8` | ambigu — sinyal saling bertentangan, tidak ada yang dominan |
 | `0` | tidak layak — wajah tidak terlihat, audio rusak, bukan dialog |
 
 Setelah memilih, beri keyakinan **1–5**:
@@ -30,8 +32,10 @@ Setelah memilih, beri keyakinan **1–5**:
 | **Senang** | Ekspresi positif jelas: tawa, senyum terbuka, nada ceria | Kabar baik, reuni, lelucon yang berhasil | Antusiasme datar → netral |
 | **Sedih** | Kekecewaan atau kehilangan; tempo melambat, air mata, bahu turun | Perpisahan, kabar duka, penyesalan | Marah yang menahan tangis → sedih bila dominan |
 | **Marah** | Konfrontasi atau kemarahan; volume naik, alis turun, rahang menegang | Pertengkaran, ancaman, tuduhan | Kesal ringan tanpa konfrontasi → netral |
-| **Takut** | Ancaman atau kecemasan; mata membelalak, tubuh menegang, bisikan | Adegan horor, ketegangan sebelum kejadian | Kaget sesaat → takut bila bertahan lebih dari satu ujaran |
+| **Takut** | Ancaman atau kecemasan; mata membelalak, tubuh menegang, bisikan | Adegan horor, ketegangan sebelum kejadian | Kaget sesaat tanpa ancaman lanjutan → terkejut |
 | **Netral** | Tidak ada muatan emosi menonjol; informasi faktual | Dialog transaksional, penjelasan, arahan | **Bukan tempat sampah.** Bila ragu, pakai ambigu |
+| **Terkejut** | Reaksi mendadak atas hal tak terduga; alis terangkat, napas tertahan | Kabar mendadak, kejutan, kemunculan tiba-tiba | Diikuti panik berkepanjangan → takut |
+| **Jijik** | Penolakan atau rasa mual fisik maupun moral; hidung mengernyit, bibir atas naik | Melihat sesuatu menjijikkan, jijik pada perilaku | Penolakan bernada tinggi/menyerang → marah |
 
 ## Aturan umum
 
@@ -43,7 +47,7 @@ Setelah memilih, beri keyakinan **1–5**:
 4. **Kontekstual, bukan potongan.** Adegan sebelum ujaran menjelaskan kenapa
    seseorang bicara begitu. Manfaatkan itu.
 5. **Ragu antara dua kelas** → pilih yang lebih kuat, turunkan keyakinan ke 2.
-6. **Ragu tanpa arah** → `6` (ambigu). Klip ambigu diperiksa saat adjudikasi,
+6. **Ragu tanpa arah** → `8` (ambigu). Klip ambigu diperiksa saat adjudikasi,
    tidak dibuang otomatis.
 7. **Jangan menebak dari teks saja.** Bila wajah tidak terlihat dan suara datar,
    itu `0` (tidak layak), bukan netral.

@@ -832,11 +832,11 @@ dari `media/preview/`. Alurnya:
 4. video di kiri mulai dari ujaran itu, transkrip dan metadata di kanan.
    Toggle **Mulai dari awal adegan** untuk menonton konteks lebih dulu;
 5. atur keyakinan 1–5 dan catatan bila perlu, lalu tekan tombol kelas.
-   Papan ketik: `1`–`5` untuk kelas, `6` ambigu, `0` tidak layak;
+   Papan ketik: `1`–`7` untuk kelas, `8` ambigu, `0` tidak layak;
 6. label langsung tersimpan dan aplikasi pindah ke ujaran berikutnya yang
    belum dilabeli.
 
-Tombol kelas diberi warna tetap (senang, sedih, marah, takut, netral) supaya
+Tombol kelas diberi warna tetap (senang, sedih, marah, takut, netral, terkejut, jijik) supaya
 mata bisa memilih tanpa membaca ulang, dan legenda warnanya ada di sidebar.
 
 Di bawah video ada **strip wajah**: tiga potongan pada 25/50/75% ujaran, yaitu

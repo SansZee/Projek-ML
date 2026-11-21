@@ -588,6 +588,23 @@ def upsert_labels(path: Path, rows: Iterable[dict]) -> pd.DataFrame:
     return combined
 
 
+def video_window(
+    offset: float, duration: float, scene_duration: float
+) -> tuple[int, int | None]:
+    """Hitung ``(start_time, end_time)`` detik bulat yang sah untuk ``st.video``."""
+    scene_limit = max(0.0, float(scene_duration))
+    start_sec = max(0, int(offset))
+    if scene_limit > 0.0 and start_sec > int(scene_limit):
+        start_sec = max(0, int(scene_limit))
+    raw_end = offset + max(0.5, float(duration)) + 0.4
+    if scene_limit > 0.0:
+        raw_end = min(raw_end, scene_limit)
+    end_sec = int(raw_end)
+    if end_sec <= start_sec:
+        return start_sec, None
+    return start_sec, end_sec
+
+
 def progress(
     labels: pd.DataFrame, assignments: pd.DataFrame, annotator: str
 ) -> tuple[int, int]:

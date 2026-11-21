@@ -392,6 +392,8 @@ CLASS_COLORS = {
     "marah": "#B91C1C",
     "takut": "#6D28D9",
     "netral": "#334155",
+    "terkejut": "#0E7490",
+    "jijik": "#15803D",
 }
 
 BADGE_COLORS = {
@@ -400,55 +402,58 @@ BADGE_COLORS = {
     "marah": "red",
     "takut": "violet",
     "netral": "gray",
+    "terkejut": "primary",
+    "jijik": "green",
 }
 
-APP_CSS = """
-<style>
-  [data-testid="stMainBlockContainer"], .block-container {
-    max-width: 1600px; padding-top: 1.4rem; padding-bottom: 3.5rem;
-  }
-  [data-testid="stHeader"] { background: transparent; }
-  #MainMenu, footer { visibility: hidden; }
 
-  .emosi-legend { display: grid; gap: .3rem; margin: .3rem 0 .2rem; }
-  .emosi-legend div { font-size: .85rem; color: #334155; }
-  .emosi-legend i {
+def build_app_css() -> str:
+    class_rules = "\n".join(
+        f'  [class*="st-key-label-{name}-"] button {{ background: {color}; color: #fff; }}\n'
+        f'  [class*="st-key-label-{name}-"] button p {{ color: #fff; }}'
+        for name, color in CLASS_COLORS.items()
+    )
+    return f"""
+<style>
+  [data-testid="stMainBlockContainer"], .block-container {{
+    max-width: 1600px; padding-top: 1.4rem; padding-bottom: 3.5rem;
+  }}
+  [data-testid="stHeader"] {{ background: transparent; }}
+  #MainMenu, footer {{ visibility: hidden; }}
+
+  .emosi-legend {{ display: grid; gap: .3rem; margin: .3rem 0 .2rem; }}
+  .emosi-legend div {{ font-size: .85rem; color: #334155; }}
+  .emosi-legend i {{
     display: inline-block; width: .65rem; height: .65rem; border-radius: 999px;
     margin-right: .5rem; vertical-align: baseline;
-  }
+  }}
 
-  [class*="st-key-label-"] button {
-    min-height: 3.2rem; border-radius: .7rem; border: 1px solid transparent;
+  [class*="st-key-label-"] button {{
+    min-height: 3.1rem; border-radius: .7rem; border: 1px solid transparent;
+    padding: .3rem .4rem; gap: .3rem;
     transition: background-color .15s ease, box-shadow .15s ease;
-  }
-  [class*="st-key-label-"] button p { font-weight: 650; font-size: 1rem; }
-  [class*="st-key-label-"] button:hover { filter: brightness(.9); }
-  [class*="st-key-label-"] button:focus-visible {
+  }}
+  [class*="st-key-label-"] button p {{
+    font-weight: 650; font-size: .85rem; white-space: nowrap;
+  }}
+  [class*="st-key-label-"] button:hover {{ filter: brightness(.9); }}
+  [class*="st-key-label-"] button:focus-visible {{
     outline: 2px solid #0F172A; outline-offset: 2px;
-  }
-  [class*="st-key-label-senang-"] button { background: #B45309; color: #fff; }
-  [class*="st-key-label-senang-"] button p { color: #fff; }
-  [class*="st-key-label-sedih-"] button { background: #1D4ED8; color: #fff; }
-  [class*="st-key-label-sedih-"] button p { color: #fff; }
-  [class*="st-key-label-marah-"] button { background: #B91C1C; color: #fff; }
-  [class*="st-key-label-marah-"] button p { color: #fff; }
-  [class*="st-key-label-takut-"] button { background: #6D28D9; color: #fff; }
-  [class*="st-key-label-takut-"] button p { color: #fff; }
-  [class*="st-key-label-netral-"] button { background: #334155; color: #fff; }
-  [class*="st-key-label-netral-"] button p { color: #fff; }
+  }}
+{class_rules}
 
-  [class*="st-key-special-"] button { min-height: 2.5rem; border-radius: .6rem; }
-  [class*="st-key-special-ambiguous-"] button {
+  [class*="st-key-special-"] button {{ min-height: 2.5rem; border-radius: .6rem; }}
+  [class*="st-key-special-ambiguous-"] button {{
     border: 1px solid #0D9488; color: #0F766E; background: transparent;
-  }
-  [class*="st-key-special-noteligible-"] button {
+  }}
+  [class*="st-key-special-noteligible-"] button {{
     border: 1px solid #B91C1C; color: #991B1B; background: transparent;
-  }
-  [class*="st-key-special-lewati"] button { color: #475569; }
+  }}
+  [class*="st-key-special-lewati"] button {{ color: #475569; }}
 
-  @media (prefers-reduced-motion: reduce) {
-    [class*="st-key-label-"] button { transition: none; }
-  }
+  @media (prefers-reduced-motion: reduce) {{
+    [class*="st-key-label-"] button {{ transition: none; }}
+  }}
 </style>
 """
 
@@ -459,7 +464,7 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     from emosi import annotate as ann
 
     st.set_page_config(page_title="Pelabelan emosi", layout="wide")
-    st.markdown(APP_CSS, unsafe_allow_html=True)
+    st.markdown(build_app_css(), unsafe_allow_html=True)
     cfg = load_config(os.environ.get("EMOSI_CONFIG", "config.yaml"))
     data_dir = cfg.resolve("paths.data_dir")
     preview_dir = cfg.resolve("paths.media_dir") / "preview"
@@ -690,16 +695,33 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     duration = max(0.5, float(current["end_s"]) - float(current["start_s"]))
     existing = label_by_id.get(str(utterance_id))
 
+    replay_seq_key = f"_replay_seq_{scene_id}_{utterance_id}"
+
+    def trigger_replay() -> None:
+        st.session_state["whole_scene"] = False
+        st.session_state[replay_seq_key] = (
+            int(st.session_state.get(replay_seq_key, 0)) + 1
+        )
+
     def video_block() -> None:
+        replay_seq = int(st.session_state.get(replay_seq_key, 0))
+        autoplay = replay_seq > 0 and not whole_scene
+        alt_tag = f"Preview adegan {scene_id}" + (
+            f" · {replay_seq}" if replay_seq else ""
+        )
         if whole_scene:
-            st.video(str(preview), width="stretch", alt=f"Preview adegan {scene_id}")
+            st.video(str(preview), width="stretch", alt=alt_tag)
         else:
+            start_time, end_time = ann.video_window(
+                offset, duration, cut_end - cut_start
+            )
             st.video(
                 str(preview),
-                start_time=offset,
-                end_time=min(offset + duration + 0.4, cut_end - cut_start),
+                start_time=start_time,
+                end_time=end_time,
                 width="stretch",
-                alt=f"Preview adegan {scene_id}",
+                autoplay=autoplay,
+                alt=alt_tag,
             )
         strip = face_preview.strip_path(face_dir, str(utterance_id))
         if strip.exists():
@@ -746,7 +768,17 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         note = st.text_input("Catatan (opsional)", key=f"notes_{utterance_id}")
         return int(chosen), str(note)
 
-    whole_scene = st.toggle("Mulai dari awal adegan", value=False)
+    ctrl_left, ctrl_right, _ = st.columns([1.2, 1.3, 1.5], gap="small")
+    with ctrl_left:
+        whole_scene = st.toggle("Mulai dari awal adegan", key="whole_scene")
+    with ctrl_right:
+        st.button(
+            "↺ Ulang potongan ujaran",
+            key=f"replay_utt_{scene_id}_{utterance_id}",
+            width="stretch",
+            help="Putar ulang video tepat di potongan ujaran yang sedang dipilih.",
+            on_click=trigger_replay,
+        )
     if video_penuh:
         video_block()
         text_col, control_col = st.columns([1.6, 1], gap="large")
@@ -788,8 +820,10 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
             }
         st.rerun()
 
+    ambiguous_shortcut = str(len(classes) + 1)
     st.caption(
-        "Beri label — tekan `1`–`5` untuk kelas, `6` ambigu, `0` tidak layak. "
+        f"Beri label — tekan `1`–`{len(classes)}` untuk kelas, "
+        f"`{ambiguous_shortcut}` ambigu, `0` tidak layak. "
         "Tiap klik langsung tersimpan."
     )
     label_cols = st.columns(len(classes), gap="small")
@@ -806,9 +840,9 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
 
     special = st.columns(3, gap="small")
     if special[0].button(
-        f"6 · {ambiguous}",
+        f"{ambiguous_shortcut} · {ambiguous}",
         key=f"special-ambiguous-{utterance_id}",
-        shortcut="6",
+        shortcut=ambiguous_shortcut,
         width="stretch",
     ):
         save(ambiguous)
