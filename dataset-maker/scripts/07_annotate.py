@@ -450,12 +450,48 @@ def build_app_css() -> str:
     border: 1px solid #B91C1C; color: #991B1B; background: transparent;
   }}
   [class*="st-key-special-lewati"] button {{ color: #475569; }}
+  [class*="st-key-step_"] button p,
+  [class*="st-key-replay_utt_"] button p {{
+    font-size: .85rem; white-space: nowrap;
+  }}
 
   @media (prefers-reduced-motion: reduce) {{
     [class*="st-key-label-"] button {{ transition: none; }}
   }}
 </style>
 """
+
+
+ALL_FILMS = "__all__"
+
+
+def _read_static_tables(
+    pool_path: Path, assignment_path: Path, scene_path: Path
+) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, tuple[float, float]]]:
+    import streamlit as st
+
+    @st.cache_data(show_spinner=False)
+    def _cached(
+        pool_str: str,
+        assign_str: str,
+        scene_str: str,
+        _mtimes: tuple[float, float, float],
+    ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, tuple[float, float]]]:
+        pool = pd.read_csv(pool_str)
+        assignments = pd.read_csv(assign_str)
+        scenes = pd.read_csv(scene_str)
+        bounds = {
+            str(row.scene_id): (float(row.start_s), float(row.end_s))
+            for row in scenes.itertuples()
+        }
+        return pool, assignments, bounds
+
+    mtimes = (
+        pool_path.stat().st_mtime,
+        assignment_path.stat().st_mtime,
+        scene_path.stat().st_mtime,
+    )
+    return _cached(str(pool_path), str(assignment_path), str(scene_path), mtimes)
 
 
 def run_app() -> None:  # noqa: C901 - alur UI memang panjang
@@ -465,6 +501,9 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
 
     st.set_page_config(page_title="Pelabelan emosi", layout="wide")
     st.markdown(build_app_css(), unsafe_allow_html=True)
+    if toast_msg := st.session_state.pop("_scene_toast", None):
+        st.toast(toast_msg)
+
     cfg = load_config(os.environ.get("EMOSI_CONFIG", "config.yaml"))
     data_dir = cfg.resolve("paths.data_dir")
     preview_dir = cfg.resolve("paths.media_dir") / "preview"
@@ -483,11 +522,9 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         )
         st.stop()
 
-    pool = pd.read_csv(pool_path)
-    assignments = pd.read_csv(assignment_path)
-    # Preview dipotong mulai start_s di pool_scenes.csv. Semua posisi di UI harus
-    # memakai titik itu, bukan ujaran pertama — selisihnya bisa puluhan detik.
-    scene_bounds = scene_times(data_dir)
+    pool, assignments, scene_bounds = _read_static_tables(
+        pool_path, assignment_path, scene_path
+    )
     classes = cfg.classes()
     ambiguous = str(cfg.get("labels.ambiguous_token"))
     not_eligible = str(cfg.get("labels.not_eligible_token"))
@@ -510,8 +547,6 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         )
 
     people = sorted(assignments["annotator"].astype(str).unique())
-    # Default ke pemilik film di laptop ini: orang yang punya tugas "milik".
-    # Di laptop tanpa film, semua orang setara, jadi pakai urutan nama.
     owners = set(
         assignments.loc[assignments["role"] == ann.ROLE_OWN, "annotator"].astype(str)
     )
@@ -524,9 +559,13 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     annotator = st.sidebar.selectbox(
         "Anotator", people, index=people.index(default), key="annotator_pick"
     )
-    if st.session_state.get("_annotator") != annotator:
+    prev_annotator = st.session_state.get("_annotator")
+    if prev_annotator != annotator:
         st.session_state["_annotator"] = annotator
-        st.session_state.pop("scene_pick", None)
+        if prev_annotator is not None:
+            st.session_state.pop("film_pick", None)
+            st.session_state.pop("_active_film", None)
+            st.session_state.pop("scene_pick", None)
 
     labels_path = data_dir / f"labels_{annotator}.csv"
     labels = ann.read_labels(labels_path)
@@ -583,6 +622,12 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         key="video_penuh",
         help="Video selebar layar, teks pindah ke bawah. Untuk menilai wajah dari dekat.",
     )
+    auto_next_scene = st.sidebar.toggle(
+        "Lanjut adegan otomatis",
+        value=True,
+        key="auto_next_scene",
+        help="Saat satu adegan selesai, otomatis lanjut ke adegan berikutnya di film yang sama.",
+    )
 
     scenes = (
         mine.groupby("scene_id", sort=False)
@@ -598,57 +643,137 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         .reset_index(drop=True)
     )
     scene_done = {
-        str(scene): len(
-            set(group["utterance_id"].astype(str)) & done_ids
-        )
+        str(scene): len(set(group["utterance_id"].astype(str)) & done_ids)
         for scene, group in mine.groupby("scene_id")
     }
-    scene_ids = [str(value) for value in scenes["scene_id"]]
+    scene_totals = dict(zip(scenes["scene_id"].astype(str), scenes["n"].astype(int), strict=True))
+    unfinished_set = {
+        sid for sid, total in scene_totals.items() if scene_done.get(sid, 0) < total
+    }
+    scene_film_map = dict(
+        zip(scenes["scene_id"].astype(str), scenes["film_id"].astype(str), strict=True)
+    )
 
-    if st.session_state.get("scene_pick") not in scene_ids:
-        unfinished = [
-            scene for scene in scene_ids if scene_done.get(scene, 0) < len(
-                mine[mine["scene_id"].astype(str) == scene]
+    films_df = (
+        scenes.groupby("film_id", sort=False)
+        .agg(
+            title=("title", "first"),
+            n_scenes=("scene_id", "size"),
+            n_utts=("n", "sum"),
+        )
+        .reset_index()
+        .sort_values("title", kind="stable")
+        .reset_index(drop=True)
+    )
+    film_ids = [str(fid) for fid in films_df["film_id"]]
+    film_options = [ALL_FILMS, *film_ids]
+    film_titles = dict(zip(film_ids, films_df["title"].astype(str), strict=True))
+    film_scene_counts = dict(zip(film_ids, films_df["n_scenes"].astype(int), strict=True))
+    film_utt_counts = dict(zip(film_ids, films_df["n_utts"].astype(int), strict=True))
+    film_done_counts = {
+        str(fid): len(set(group["utterance_id"].astype(str)) & done_ids)
+        for fid, group in mine.groupby("film_id")
+    }
+
+    # Label dropdown film/adegan/ujaran dijaga statis (tanpa angka progres berubah-ubah)
+    # supaya Streamlit SelectboxSerde tidak gagal mencocokkan label lalu mengulang ke item lain.
+    def film_label(fid: str) -> str:
+        if fid == ALL_FILMS:
+            return f"Semua film ({len(film_ids)} film · {len(scenes)} adegan)"
+        return f"{film_titles[fid]} · {film_scene_counts[fid]} adegan"
+
+    pending_film = st.session_state.pop("_next_film", None)
+    if pending_film in film_options:
+        st.session_state["film_pick"] = pending_film
+    if st.session_state.get("film_pick") not in film_options:
+        qp_film = st.query_params.get("film")
+        qp_scene = st.query_params.get("scene")
+        if qp_film in film_options:
+            st.session_state["film_pick"] = qp_film
+        elif qp_scene in scene_film_map:
+            st.session_state["film_pick"] = scene_film_map[qp_scene]
+        else:
+            first_open_film = next(
+                (str(sid) for sid in scenes["scene_id"].astype(str) if sid in unfinished_set),
+                None,
             )
-        ]
-        st.session_state["scene_pick"] = (unfinished or scene_ids)[0]
+            st.session_state["film_pick"] = (
+                scene_film_map[first_open_film] if first_open_film else film_ids[0]
+            )
 
-    # Perpindahan adegan disimpan dulu, lalu diterapkan sebelum widget dibuat.
-    # Streamlit menolak mengubah state widget yang sudah dibuat di run ini.
+    film_pick = st.sidebar.selectbox(
+        "Judul film", film_options, key="film_pick", format_func=film_label
+    )
+    prev_film = st.session_state.get("_active_film")
+    if prev_film is not None and prev_film != film_pick:
+        st.session_state.pop("scene_pick", None)
+        st.session_state.pop("_next_scene", None)
+    st.session_state["_active_film"] = film_pick
+
+    if film_pick == ALL_FILMS:
+        visible_scenes = scenes.reset_index(drop=True)
+    else:
+        visible_scenes = scenes[scenes["film_id"].astype(str) == film_pick].reset_index(
+            drop=True
+        )
+        f_done = film_done_counts.get(film_pick, 0)
+        f_tot = film_utt_counts.get(film_pick, 0)
+        st.sidebar.caption(f"Film ini: {f_done} / {f_tot} ujaran")
+
+    visible_ids = [str(value) for value in visible_scenes["scene_id"]]
+    visible_meta = {
+        str(row.scene_id): (pos, row)
+        for pos, row in enumerate(visible_scenes.itertuples(), start=1)
+    }
+
     next_scene = st.session_state.pop("_next_scene", None)
-    if next_scene in scene_ids:
+    if next_scene in visible_ids:
         st.session_state["scene_pick"] = next_scene
+    if st.session_state.get("scene_pick") not in visible_ids:
+        qp_scene = st.query_params.get("scene")
+        if qp_scene in visible_ids:
+            st.session_state["scene_pick"] = qp_scene
+        else:
+            unfinished_visible = [sid for sid in visible_ids if sid in unfinished_set]
+            st.session_state["scene_pick"] = (unfinished_visible or visible_ids)[0]
 
-    def scene_label(scene_id: str) -> str:
-        row = scenes[scenes["scene_id"].astype(str) == scene_id].iloc[0]
-        total = int(row["n"])
-        done = scene_done.get(scene_id, 0)
-        mark = "selesai" if done >= total else f"{done}/{total}"
-        return f"{scene_id} · {mmss(row['start'])} · {mark}"
+    def scene_label(sid: str) -> str:
+        pos, row = visible_meta[sid]
+        if film_pick == ALL_FILMS:
+            return f"{row.title} · {sid} · {mmss(row.start)} ({int(row.n)} ujaran)"
+        return f"Adegan {pos}/{len(visible_ids)} · {mmss(row.start)} ({int(row.n)} ujaran) · {sid}"
 
     scene_id = st.sidebar.selectbox(
-        "Adegan", scene_ids, key="scene_pick", format_func=scene_label
+        "Adegan", visible_ids, key="scene_pick", format_func=scene_label
     )
-    scene = scenes[scenes["scene_id"].astype(str) == str(scene_id)].iloc[0]
+    if (
+        st.query_params.get("film") != film_pick
+        or st.query_params.get("scene") != str(scene_id)
+    ):
+        st.query_params["film"] = film_pick
+        st.query_params["scene"] = str(scene_id)
+
+    scene = visible_scenes[visible_scenes["scene_id"].astype(str) == str(scene_id)].iloc[0]
     scene_rows = (
         mine[mine["scene_id"].astype(str) == str(scene_id)]
         .sort_values("index", kind="stable")
         .reset_index(drop=True)
     )
     scene_total = len(scene_rows)
-    scene_finished = scene_done.get(str(scene_id), 0) >= scene_total
+    done_in_scene = scene_done.get(str(scene_id), 0)
+    scene_finished = done_in_scene >= scene_total
     cut_start, cut_end = scene_bounds.get(
         str(scene_id), (float(scene["start"]), float(scene["end"]))
     )
     st.sidebar.progress(
-        scene_done.get(str(scene_id), 0) / max(1, scene_total),
-        text=f"{scene_done.get(str(scene_id), 0)} / {scene_total} di adegan ini",
+        done_in_scene / max(1, scene_total),
+        text=f"{done_in_scene} / {scene_total} di adegan ini",
     )
 
-    scene_index = scene_ids.index(str(scene_id)) + 1
+    scene_index = visible_ids.index(str(scene_id)) + 1
     st.markdown(f"#### {scene['title']}")
     st.caption(
-        f"`{scene_id}` · adegan {scene_index}/{len(scene_ids)} · "
+        f"`{scene_id}` · adegan {scene_index}/{len(visible_ids)} · "
         f"{mmss(cut_start)}–{mmss(cut_end)} · {scene_total} ujaran"
     )
     if scene_finished:
@@ -663,66 +788,90 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         )
         st.stop()
 
+    scene_utt_ids = [str(value) for value in scene_rows["utterance_id"]]
     pick_key = f"utt_{scene_id}"
     advance = st.session_state.pop("_next", None)
     if advance and advance.get("scene") == str(scene_id):
-        st.session_state[pick_key] = advance["utterance"]
+        if advance["utterance"] in scene_utt_ids:
+            st.session_state[pick_key] = advance["utterance"]
 
-    if pick_key not in st.session_state or st.session_state[pick_key] not in set(
-        scene_rows["utterance_id"].astype(str)
-    ):
-        unlabeled = [
-            str(value)
-            for value in scene_rows["utterance_id"]
-            if str(value) not in done_ids
-        ]
-        st.session_state[pick_key] = (unlabeled or list(scene_rows["utterance_id"]))[0]
+    if pick_key not in st.session_state or st.session_state[pick_key] not in set(scene_utt_ids):
+        unlabeled = [uid for uid in scene_utt_ids if uid not in done_ids]
+        st.session_state[pick_key] = (unlabeled or scene_utt_ids)[0]
 
-    def utterance_label(utterance_id: str) -> str:
-        row = scene_rows[scene_rows["utterance_id"].astype(str) == utterance_id].iloc[0]
-        mark = "✓" if utterance_id in done_ids else "·"
-        offset = mmss(float(row["start_s"]) - cut_start)
-        text = str(row["text"])
-        return f"{mark} {offset} · {text[:70]}"
+    utt_meta = {
+        str(row.utterance_id): (pos, row)
+        for pos, row in enumerate(scene_rows.itertuples(), start=1)
+    }
+
+    def utterance_label(uid: str) -> str:
+        pos, row = utt_meta[uid]
+        offset_str = mmss(float(row.start_s) - cut_start)
+        return f"{pos}/{scene_total} · {offset_str} · {str(row.text)[:65]}"
 
     utterance_id = st.selectbox(
-        "Ujaran", list(scene_rows["utterance_id"]), key=pick_key,
-        format_func=utterance_label,
+        "Ujaran", scene_utt_ids, key=pick_key, format_func=utterance_label
     )
     current = scene_rows[scene_rows["utterance_id"].astype(str) == str(utterance_id)].iloc[0]
 
     offset = max(0.0, float(current["start_s"]) - cut_start)
     duration = max(0.5, float(current["end_s"]) - float(current["start_s"]))
     existing = label_by_id.get(str(utterance_id))
-
     replay_seq_key = f"_replay_seq_{scene_id}_{utterance_id}"
 
     def trigger_replay() -> None:
+        st.session_state["_user_interacted"] = True
         st.session_state["whole_scene"] = False
         st.session_state[replay_seq_key] = (
             int(st.session_state.get(replay_seq_key, 0)) + 1
         )
 
+    def move_step(direction: int) -> None:
+        st.session_state["_user_interacted"] = True
+        nxt = ann.step_utterance(
+            scene_utt_ids, str(utterance_id), done_ids, direction=direction, prefer_unlabeled=False
+        )
+        if nxt is not None:
+            st.session_state["_next"] = {"scene": str(scene_id), "utterance": nxt}
+            return
+        cur_pos = visible_ids.index(str(scene_id))
+        if direction > 0 and cur_pos + 1 < len(visible_ids):
+            target_scene = visible_ids[cur_pos + 1]
+            st.session_state["_next_scene"] = target_scene
+        elif direction < 0 and cur_pos > 0:
+            prev_scene = visible_ids[cur_pos - 1]
+            prev_utts = (
+                mine[mine["scene_id"].astype(str) == prev_scene]
+                .sort_values("index", kind="stable")["utterance_id"]
+                .astype(str)
+                .tolist()
+            )
+            st.session_state["_next_scene"] = prev_scene
+            if prev_utts:
+                st.session_state[f"utt_{prev_scene}"] = prev_utts[-1]
+
     def video_block() -> None:
         replay_seq = int(st.session_state.get(replay_seq_key, 0))
-        autoplay = replay_seq > 0 and not whole_scene
-        alt_tag = f"Preview adegan {scene_id}" + (
-            f" · {replay_seq}" if replay_seq else ""
+        autoplay = bool(
+            not whole_scene
+            and ((auto_play and st.session_state.get("_user_interacted", False)) or replay_seq > 0)
         )
-        if whole_scene:
-            st.video(str(preview), width="stretch", alt=alt_tag)
-        else:
-            start_time, end_time = ann.video_window(
-                offset, duration, cut_end - cut_start
-            )
-            st.video(
-                str(preview),
-                start_time=start_time,
-                end_time=end_time,
-                width="stretch",
-                autoplay=autoplay,
-                alt=alt_tag,
-            )
+        alt_tag = f"Preview {scene_id} · {utterance_id} · {replay_seq}"
+        with st.container(key=f"video_slot_{scene_id}_{utterance_id}_{replay_seq}"):
+            if whole_scene:
+                st.video(str(preview), width="stretch", alt=alt_tag)
+            else:
+                start_time, end_time = ann.video_window(
+                    offset, duration, cut_end - cut_start
+                )
+                st.video(
+                    str(preview),
+                    start_time=start_time,
+                    end_time=end_time,
+                    width="stretch",
+                    autoplay=autoplay,
+                    alt=alt_tag,
+                )
         strip = face_preview.strip_path(face_dir, str(utterance_id))
         if strip.exists():
             st.image(str(strip), caption="Wajah yang dipakai model · 25/50/75%")
@@ -750,6 +899,8 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
                 color=BADGE_COLORS.get(str(existing.label), "gray"),
             )
             st.caption(f"keyakinan {existing.confidence}")
+        else:
+            st.caption("Belum dilabeli")
         st.markdown(f"### {current['text']}")
         st.caption(
             f"{mmss(current['start_s'])}–{mmss(current['end_s'])} · "
@@ -768,17 +919,46 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         note = st.text_input("Catatan (opsional)", key=f"notes_{utterance_id}")
         return int(chosen), str(note)
 
-    ctrl_left, ctrl_right, _ = st.columns([1.2, 1.3, 1.5], gap="small")
-    with ctrl_left:
-        whole_scene = st.toggle("Mulai dari awal adegan", key="whole_scene")
-    with ctrl_right:
+    c_prev, c_rep, c_next, c_auto, c_whole = st.columns([1.08, 1.25, 1.08, 0.92, 0.97], gap="small")
+    with c_prev:
         st.button(
-            "↺ Ulang potongan ujaran",
-            key=f"replay_utt_{scene_id}_{utterance_id}",
+            "← Sebelumnya",
+            key=f"step_prev_{scene_id}_{utterance_id}",
+            shortcut="Left",
             width="stretch",
-            help="Putar ulang video tepat di potongan ujaran yang sedang dipilih.",
+            disabled=(scene_index == 1 and str(utterance_id) == scene_utt_ids[0]),
+            on_click=move_step,
+            args=(-1,),
+        )
+    with c_rep:
+        st.button(
+            "↺ Ulang potongan",
+            key=f"replay_utt_{scene_id}_{utterance_id}",
+            shortcut="U",
+            width="stretch",
+            help="Putar ulang video tepat di potongan ujaran ini (tombol U).",
             on_click=trigger_replay,
         )
+    with c_next:
+        st.button(
+            "Berikutnya →",
+            key=f"step_next_{scene_id}_{utterance_id}",
+            shortcut="Right",
+            width="stretch",
+            disabled=(scene_index == len(visible_ids) and str(utterance_id) == scene_utt_ids[-1]),
+            on_click=move_step,
+            args=(1,),
+        )
+    with c_auto:
+        auto_play = st.toggle(
+            "Putar otomatis",
+            value=True,
+            key="auto_play",
+            help="Langsung putar video setiap pindah atau selesai menilai ujaran.",
+        )
+    with c_whole:
+        whole_scene = st.toggle("Dari awal adegan", key="whole_scene")
+
     if video_penuh:
         video_block()
         text_col, control_col = st.columns([1.6, 1], gap="large")
@@ -795,6 +975,7 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
             confidence, notes = control_block()
 
     def save(label: str) -> None:
+        st.session_state["_user_interacted"] = True
         ann.upsert_labels(
             labels_path,
             [
@@ -808,23 +989,35 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
                 )
             ],
         )
-        remaining = [
-            str(value)
-            for value in scene_rows["utterance_id"]
-            if str(value) != str(utterance_id) and str(value) not in done_ids
-        ]
-        if remaining:
-            st.session_state["_next"] = {
-                "scene": str(scene_id),
-                "utterance": remaining[0],
-            }
+        done_after = done_ids | {str(utterance_id)}
+        nxt = ann.step_utterance(
+            scene_utt_ids,
+            str(utterance_id),
+            done_after,
+            direction=1,
+            prefer_unlabeled=True,
+        )
+        if nxt is not None:
+            st.session_state["_next"] = {"scene": str(scene_id), "utterance": nxt}
+        else:
+            unfinished_after = set(unfinished_set)
+            if set(scene_utt_ids) <= done_after:
+                unfinished_after.discard(str(scene_id))
+            nxt_scene = ann.next_scene_in_scope(
+                visible_ids, str(scene_id), unfinished_after
+            )
+            if auto_next_scene and nxt_scene is not None:
+                st.session_state["_next_scene"] = nxt_scene
+                st.session_state["_scene_toast"] = (
+                    f"Adegan {scene_id} selesai · lanjut ke {nxt_scene}"
+                )
         st.rerun()
 
     ambiguous_shortcut = str(len(classes) + 1)
     st.caption(
-        f"Beri label — tekan `1`–`{len(classes)}` untuk kelas, "
-        f"`{ambiguous_shortcut}` ambigu, `0` tidak layak. "
-        "Tiap klik langsung tersimpan."
+        f"Keyboard: `←` sebelum · `U` ulang potongan · `→` berikut · "
+        f"`1`–`{len(classes)}` emosi · `{ambiguous_shortcut}` ambigu · `0` tidak layak. "
+        "Jika kursor masih di dropdown/catatan, klik area kosong sekali agar tombol aktif."
     )
     label_cols = st.columns(len(classes), gap="small")
     for index, (column, name) in enumerate(
@@ -858,33 +1051,34 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         key=f"special-lewati-{utterance_id}",
         width="stretch",
     ):
-        remaining = [
-            str(value)
-            for value in scene_rows["utterance_id"]
-            if str(value) != str(utterance_id) and str(value) not in done_ids
-        ]
-        if remaining:
-            st.session_state["_next"] = {
-                "scene": str(scene_id),
-                "utterance": remaining[0],
-            }
+        move_step(1)
         st.rerun()
 
     if scene_finished:
-        st.success("Adegan ini selesai.")
-        next_scenes = [s for s in scene_ids if s != str(scene_id)]
-        if next_scenes:
-            current_index = scene_ids.index(str(scene_id))
-            target = next_scenes[0]
-            for candidate in scene_ids[current_index + 1 :]:
-                if scene_done.get(candidate, 0) < len(
-                    mine[mine["scene_id"].astype(str) == candidate]
-                ):
-                    target = candidate
-                    break
+        nxt_in_film = ann.next_scene_in_scope(
+            visible_ids, str(scene_id), unfinished_set
+        )
+        if nxt_in_film is not None:
+            st.success("Adegan ini selesai.")
             if st.button("Adegan berikutnya", type="primary"):
-                st.session_state["_next_scene"] = target
+                st.session_state["_next_scene"] = nxt_in_film
                 st.rerun()
+        elif film_pick != ALL_FILMS:
+            st.success(f"Semua adegan film {scene['title']} sudah selesai.")
+            other_unfinished_films = [
+                fid
+                for fid in film_ids
+                if fid != film_pick and film_done_counts.get(fid, 0) < film_utt_counts.get(fid, 0)
+            ]
+            if other_unfinished_films and st.button(
+                f"Lanjut ke film: {film_titles[other_unfinished_films[0]]}",
+                type="primary",
+            ):
+                st.session_state["_next_film"] = other_unfinished_films[0]
+                st.session_state.pop("scene_pick", None)
+                st.rerun()
+        else:
+            st.success("Adegan ini selesai.")
 
     st.sidebar.caption(f"label tersimpan: `{labels_path.name}`")
 

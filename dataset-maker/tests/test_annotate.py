@@ -322,3 +322,31 @@ def test_video_window_prevents_invalid_streamlit_end_time():
     assert annotate.video_window(142.370, 2.1, 141.600) == (141, None)
     # Adegan sangat pendek (< 1 detik)
     assert annotate.video_window(0.2, 1.5, 0.8) == (0, None)
+
+
+def test_step_utterance_sequential_and_prefer_unlabeled():
+    utts = ["u1", "u2", "u3", "u4"]
+    done = {"u1", "u2"}
+    assert annotate.step_utterance(
+        utts, "u2", done, direction=1, prefer_unlabeled=True
+    ) == "u3"
+    assert annotate.step_utterance(
+        utts, "u4", {"u1", "u3", "u4"}, direction=1, prefer_unlabeled=True
+    ) == "u2"
+    # Adegan sudah selesai semua -> tetap maju berurutan untuk review
+    assert annotate.step_utterance(
+        utts, "u2", set(utts), direction=1, prefer_unlabeled=True
+    ) == "u3"
+    assert annotate.step_utterance(
+        utts, "u4", set(utts), direction=1, prefer_unlabeled=True
+    ) is None
+    assert annotate.step_utterance(utts, "u3", done, direction=-1) == "u2"
+    assert annotate.step_utterance(utts, "u1", done, direction=-1) is None
+
+
+def test_next_scene_in_scope_stays_within_film():
+    film_scenes = ["S01", "S02", "S03", "S04"]
+    unfinished = {"S01", "S03"}
+    assert annotate.next_scene_in_scope(film_scenes, "S01", unfinished) == "S03"
+    assert annotate.next_scene_in_scope(film_scenes, "S03", unfinished) == "S01"
+    assert annotate.next_scene_in_scope(film_scenes, "S01", set()) is None

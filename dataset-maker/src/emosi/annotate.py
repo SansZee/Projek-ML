@@ -605,6 +605,55 @@ def video_window(
     return start_sec, end_sec
 
 
+def step_utterance(
+    utterance_ids: list[str],
+    current_id: str,
+    done_ids: set[str],
+    direction: int = 1,
+    *,
+    prefer_unlabeled: bool = False,
+) -> str | None:
+    """Cari ujaran berikutnya/sebelumnya dalam adegan yang sama."""
+    if not utterance_ids:
+        return None
+    try:
+        idx = utterance_ids.index(current_id)
+    except ValueError:
+        idx = 0
+
+    if direction < 0:
+        return utterance_ids[idx - 1] if idx > 0 else None
+
+    if prefer_unlabeled:
+        for uid in utterance_ids[idx + 1 :]:
+            if uid not in done_ids:
+                return uid
+        for uid in utterance_ids[:idx]:
+            if uid not in done_ids:
+                return uid
+
+    return utterance_ids[idx + 1] if idx + 1 < len(utterance_ids) else None
+
+
+def next_scene_in_scope(
+    scene_ids: list[str],
+    current_scene_id: str,
+    unfinished_scenes: set[str],
+) -> str | None:
+    """Cari adegan belum selesai berikutnya di daftar adegan aktif (urut maju lalu putar)."""
+    if not scene_ids:
+        return None
+    try:
+        idx = scene_ids.index(current_scene_id)
+    except ValueError:
+        idx = -1
+    ordered = scene_ids[idx + 1 :] + scene_ids[: max(0, idx)]
+    for candidate in ordered:
+        if candidate in unfinished_scenes:
+            return candidate
+    return None
+
+
 def progress(
     labels: pd.DataFrame, assignments: pd.DataFrame, annotator: str
 ) -> tuple[int, int]:

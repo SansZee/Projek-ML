@@ -101,7 +101,7 @@ Cara kerjanya:
 
 - video di kiri, transkrip dan keyakinan di kanan;
 - di bawah video ada **strip 3 wajah** — itulah wajah yang akan diterima model;
-- pintasan papan ketik: `1`–`7` kelas, `8` ambigu, `0` tidak layak;
+- pintasan papan ketik: `1`–`7` kelas, `8` ambigu, `0` tidak layak, serta `←` / `U` / `→` untuk sebelum, ulang potongan, dan berikutnya;
 - setiap klik langsung tersimpan dan pindah ke ujaran berikutnya;
 - sesi boleh ditutup kapan saja, besok lanjut dari yang belum.
 
