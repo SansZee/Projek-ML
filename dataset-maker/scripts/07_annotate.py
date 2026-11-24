@@ -24,6 +24,13 @@ Alur lengkap:
   uv run python scripts/07_annotate.py            # atau:
   uv run streamlit run scripts/07_annotate.py
 
+  # 5. adjudikasi, setelah 08_agree.py menulis data/adjudication.csv
+  uv run streamlit run scripts/07_annotate.py -- --adjudication
+
+Layar adjudikasi memakai aplikasi yang sama: sumbernya ``adjudication.csv``,
+tujuannya kolom ``decision``, dan setiap orang hanya melihat butir yang
+ditetapkan untuknya (kolom ``adjudicator``). Tidak ada label yang ditulis.
+
 Aplikasi menulis ``data/labels_<nama>.csv`` dan menambah baris setiap kali
 satu label diklik. Sesi bisa ditutup kapan saja: yang sudah dilabeli tidak
 ditanya lagi.
@@ -58,6 +65,7 @@ from emosi.config import Config, load_config
 from emosi.media import probe_media, require_tools, run_ffmpeg
 
 ASSIGNMENTS = "assignments.csv"
+ADJUDICATION = "adjudication.csv"
 POOL = "pool.csv"
 POOL_SCENES = "pool_scenes.csv"
 
@@ -478,7 +486,7 @@ def _read_static_tables(
         _mtimes: tuple[float, float, float],
     ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, tuple[float, float]]]:
         pool = pd.read_csv(pool_str)
-        assignments = pd.read_csv(assign_str)
+        assignments = pd.read_csv(assign_str) if assign_str else pd.DataFrame()
         scenes = pd.read_csv(scene_str)
         bounds = {
             str(row.scene_id): (float(row.start_s), float(row.end_s))
@@ -488,18 +496,27 @@ def _read_static_tables(
 
     mtimes = (
         pool_path.stat().st_mtime,
-        assignment_path.stat().st_mtime,
+        assignment_path.stat().st_mtime if assignment_path.exists() else 0.0,
         scene_path.stat().st_mtime,
     )
-    return _cached(str(pool_path), str(assignment_path), str(scene_path), mtimes)
+    return _cached(
+        str(pool_path),
+        str(assignment_path) if assignment_path.exists() else "",
+        str(scene_path),
+        mtimes,
+    )
 
 
-def run_app() -> None:  # noqa: C901 - alur UI memang panjang
+def run_app(adjudicate: bool = False) -> None:  # noqa: C901 - alur UI memang panjang
     import streamlit as st
 
+    from emosi import agree
     from emosi import annotate as ann
 
-    st.set_page_config(page_title="Pelabelan emosi", layout="wide")
+    st.set_page_config(
+        page_title="Adjudikasi emosi" if adjudicate else "Pelabelan emosi",
+        layout="wide",
+    )
     st.markdown(build_app_css(), unsafe_allow_html=True)
     if toast_msg := st.session_state.pop("_scene_toast", None):
         st.toast(toast_msg)
@@ -512,17 +529,26 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     pool_path = data_dir / POOL
     assignment_path = data_dir / ASSIGNMENTS
     scene_path = data_dir / POOL_SCENES
-    missing = [
-        path.name for path in (pool_path, assignment_path, scene_path) if not path.exists()
-    ]
+    adjudication_path = data_dir / ADJUDICATION
+    needed = (
+        (pool_path, adjudication_path, scene_path)
+        if adjudicate
+        else (pool_path, assignment_path, scene_path)
+    )
+    missing = [path.name for path in needed if not path.exists()]
     if missing:
         st.error(
-            f"{', '.join(missing)} belum ada di `{data_dir}`. Minta koordinator "
-            "mengirim `pool.csv`, `pool_scenes.csv`, dan `assignments.csv`."
+            f"{', '.join(missing)} belum ada di `{data_dir}`. "
+            + (
+                "Jalankan `08_agree.py` dulu supaya `adjudication.csv` lahir."
+                if adjudicate
+                else "Minta koordinator mengirim `pool.csv`, `pool_scenes.csv`, "
+                "dan `assignments.csv`."
+            )
         )
         st.stop()
 
-    pool, assignments, scene_bounds = _read_static_tables(
+    pool, raw_assignments, scene_bounds = _read_static_tables(
         pool_path, assignment_path, scene_path
     )
     classes = cfg.classes()
@@ -531,25 +557,61 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
     confidence_min = int(cfg.get("labels.confidence_min"))
     confidence_max = int(cfg.get("labels.confidence_max"))
 
-    st.sidebar.markdown("### Pelabelan emosi")
+    st.sidebar.markdown("### Adjudikasi emosi" if adjudicate else "### Pelabelan emosi")
     st.sidebar.caption(f"`{cfg.get('project.name')}`")
     with st.expander("Aturan sesi (baca sekali)", expanded=False):
         st.markdown(
-            "- **Kalibrasi dulu** bersama tim: sepakati contoh tiap kelas. Boleh "
-            "berdiskusi di tahap ini.\n"
-            "- Saat melabeli sendiri, **jangan berdiskusi**. Kappa hanya berarti "
-            "kalau penilaian benar-benar independen.\n"
-            "- Nilai emosi yang **terlihat dan terdengar**, bukan isi cerita. "
-            "Kalau ragu, pakai `ambigu` dan turunkan keyakinan.\n"
-            "- Pakai `tidak_layak` kalau wajah tertutup, suara tertimbun musik, "
-            "atau teks subtitle tidak cocok dengan ucapannya.\n"
-            "- Label bisa diubah selama sesi. Setelah adjudikasi, label dikunci."
+            (
+                "- Tombol memutuskan ujaran yang **penilainya tidak sepakat** "
+                "(1–1), jadi tidak ada jawaban mayoritas untuk diikuti.\n"
+                "- `suara` ditampilkan tanpa nama penilai supaya keputusan tidak "
+                "dibimbing siapa yang mengatakan apa.\n"
+                "- Pakai `ambigu` kalau ekspresinya benar-benar mendua, "
+                "`tidak_layak` kalau wajah/suara tidak bisa dinilai.\n"
+                "- Butir yang kamu tangani sengaja dipilih dari yang **tidak "
+                "kamu nilai sendiri**; kalau terpaksa, catat alasannya.\n"
+                "- Keputusan tersimpan setiap klik dan bisa diubah dengan "
+                "menavigasi kembali ke butir itu."
+            )
+            if adjudicate
+            else (
+                "- **Kalibrasi dulu** bersama tim: sepakati contoh tiap kelas. Boleh "
+                "berdiskusi di tahap ini.\n"
+                "- Saat melabeli sendiri, **jangan berdiskusi**. Kappa hanya berarti "
+                "kalau penilaian benar-benar independen.\n"
+                "- Nilai emosi yang **terlihat dan terdengar**, bukan isi cerita. "
+                "Kalau ragu, pakai `ambigu` dan turunkan keyakinan.\n"
+                "- Pakai `tidak_layak` kalau wajah tertutup, suara tertimbun musik, "
+                "atau teks subtitle tidak cocok dengan ucapannya.\n"
+                "- Label bisa diubah selama sesi. Setelah adjudikasi, label dikunci."
+            )
         )
 
-    people = sorted(assignments["annotator"].astype(str).unique())
-    owners = set(
-        assignments.loc[assignments["role"] == ann.ROLE_OWN, "annotator"].astype(str)
-    )
+    if adjudicate:
+        adjudication = pd.read_csv(adjudication_path)
+        for column in ("adjudicator", "decision", "suara"):
+            if column not in adjudication.columns:
+                adjudication[column] = ""
+            adjudication[column] = adjudication[column].fillna("").astype(str)
+        adjudication["decision"] = adjudication["decision"].str.strip()
+        assignments = adjudication.rename(columns={"adjudicator": "annotator"}).assign(
+            role="adjudikasi"
+        )
+        labels = (
+            adjudication[adjudication["decision"] != ""]
+            .rename(columns={"adjudicator": "annotator"})[
+                ["annotator", "utterance_id", "decision", "suara", "n_raters"]
+            ]
+        )
+        people = sorted(name for name in assignments["annotator"].unique() if name)
+        owners: set[str] = set()
+    else:
+        assignments = raw_assignments
+        people = sorted(assignments["annotator"].astype(str).unique())
+        owners = set(
+            assignments.loc[assignments["role"] == ann.ROLE_OWN, "annotator"].astype(str)
+        )
+
     wanted = os.environ.get("EMOSI_ANNOTATOR")
     default = (
         wanted
@@ -557,7 +619,10 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         else next((person for person in people if person in owners), people[0])
     )
     annotator = st.sidebar.selectbox(
-        "Anotator", people, index=people.index(default), key="annotator_pick"
+        "Anotator" if not adjudicate else "Adjudikator",
+        people,
+        index=people.index(default),
+        key="annotator_pick",
     )
     prev_annotator = st.session_state.get("_annotator")
     if prev_annotator != annotator:
@@ -568,7 +633,8 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
             st.session_state.pop("scene_pick", None)
 
     labels_path = data_dir / f"labels_{annotator}.csv"
-    labels = ann.read_labels(labels_path)
+    if not adjudicate:
+        labels = ann.read_labels(labels_path)
     mine_labels = labels[labels["annotator"].astype(str) == annotator]
     done_ids = set(mine_labels["utterance_id"].astype(str))
     label_by_id = {
@@ -781,12 +847,21 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
 
     preview = preview_dir / f"{scene_id}.mp4"
     if not preview.exists():
-        st.error(
-            f"Preview `{preview.name}` belum ada. Jalankan di laptop ini:\n\n"
-            f"```\nuv run python scripts/07_annotate.py --prepare --annotator {annotator}\n```\n\n"
-            "Kalau adegan ini milik film orang lain, minta zip preview dari pemiliknya."
-        )
-        st.stop()
+        if adjudicate:
+            # Adjudikasi tidak boleh berhenti hanya karena satu adegan tak ada
+            # preview-nya: butirnya masih bisa diputuskan, videonya menyusul.
+            st.warning(
+                f"Preview `{preview.name}` belum ada di laptop ini. Putuskan "
+                "berdasarkan strip dan teks, atau minta zip-nya dari pemilik film."
+            )
+        else:
+            st.error(
+                f"Preview `{preview.name}` belum ada. Jalankan di laptop ini:\n\n"
+                "```\nuv run python scripts/07_annotate.py "
+                f"--prepare --annotator {annotator}\n```\n\n"
+                "Kalau adegan ini milik film orang lain, minta zip preview dari pemiliknya."
+            )
+            st.stop()
 
     scene_utt_ids = [str(value) for value in scene_rows["utterance_id"]]
     pick_key = f"utt_{scene_id}"
@@ -858,7 +933,9 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         )
         alt_tag = f"Preview {scene_id} · {utterance_id} · {replay_seq}"
         with st.container(key=f"video_slot_{scene_id}_{utterance_id}_{replay_seq}"):
-            if whole_scene:
+            if not preview.exists():
+                st.info("Video belum ada; nilai dari strip wajah dan teks di bawah.")
+            elif whole_scene:
                 st.video(str(preview), width="stretch", alt=alt_tag)
             else:
                 start_time, end_time = ann.video_window(
@@ -893,7 +970,19 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
                 st.caption(detail)
 
     def text_block() -> None:
-        if existing is not None:
+        if adjudicate:
+            if existing is not None:
+                st.badge(
+                    f"Sudah diputuskan: {existing.decision}",
+                    color=BADGE_COLORS.get(str(existing.decision), "gray"),
+                )
+            else:
+                st.caption("Belum diputuskan")
+            st.caption(
+                f"suara: {current.get('suara', '')} · dinilai "
+                f"{int(current.get('n_raters') or 0)} orang"
+            )
+        elif existing is not None:
             st.badge(
                 f"Sudah dilabeli: {existing.label}",
                 color=BADGE_COLORS.get(str(existing.label), "gray"),
@@ -904,18 +993,22 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         st.markdown(f"### {current['text']}")
         st.caption(
             f"{mmss(current['start_s'])}–{mmss(current['end_s'])} · "
-            f"{int(current['duration_s'])} detik · {current['role']}"
+            f"{int(current['duration_s'])} detik"
+            + ("" if adjudicate else f" · {current['role']}")
         )
 
     def control_block() -> tuple[int, str]:
-        chosen = st.radio(
-            "Keyakinan (1 ragu – 5 yakin)",
-            list(range(confidence_min, confidence_max + 1)),
-            horizontal=True,
-            index=2 if confidence_min <= 3 <= confidence_max else 0,
-            key="confidence",
-            help="1 = menebak, 3 = cukup yakin, 5 = sangat yakin.",
-        )
+        if adjudicate:
+            chosen = 3
+        else:
+            chosen = st.radio(
+                "Keyakinan (1 ragu – 5 yakin)",
+                list(range(confidence_min, confidence_max + 1)),
+                horizontal=True,
+                index=2 if confidence_min <= 3 <= confidence_max else 0,
+                key="confidence",
+                help="1 = menebak, 3 = cukup yakin, 5 = sangat yakin.",
+            )
         note = st.text_input("Catatan (opsional)", key=f"notes_{utterance_id}")
         return int(chosen), str(note)
 
@@ -976,19 +1069,28 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
 
     def save(label: str) -> None:
         st.session_state["_user_interacted"] = True
-        ann.upsert_labels(
-            labels_path,
-            [
-                ann.label_row(
-                    annotator=annotator,
-                    utterance=current,
-                    label=label,
-                    confidence=int(confidence),
-                    role=str(current["role"]),
-                    notes=str(notes),
-                )
-            ],
-        )
+        if adjudicate:
+            agree.save_decision(
+                adjudication_path,
+                str(utterance_id),
+                label,
+                decided_by=annotator,
+                notes=str(notes),
+            )
+        else:
+            ann.upsert_labels(
+                labels_path,
+                [
+                    ann.label_row(
+                        annotator=annotator,
+                        utterance=current,
+                        label=label,
+                        confidence=int(confidence),
+                        role=str(current["role"]),
+                        notes=str(notes),
+                    )
+                ],
+            )
         done_after = done_ids | {str(utterance_id)}
         nxt = ann.step_utterance(
             scene_utt_ids,
@@ -1080,7 +1182,10 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
         else:
             st.success("Adegan ini selesai.")
 
-    st.sidebar.caption(f"label tersimpan: `{labels_path.name}`")
+    st.sidebar.caption(
+        "disimpan ke: "
+        + (f"`{ADJUDICATION}`" if adjudicate else f"`{labels_path.name}`")
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -1089,14 +1194,24 @@ def run_app() -> None:  # noqa: C901 - alur UI memang panjang
 
 
 def main(argv: list[str] | None = None) -> int:
+    raw = list(sys.argv[1:] if argv is None else argv)
+    adjudicate = "--adjudication" in raw or os.environ.get("EMOSI_ADJUDICATE") == "1"
     if streamlit_running():
-        run_app()
+        run_app(adjudicate=adjudicate)
         return 0
 
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--config", default="config.yaml")
+    parser.add_argument(
+        "--adjudication",
+        action="store_true",
+        help=(
+            "layar adjudikasi; jalankan lewat: "
+            "streamlit run scripts/07_annotate.py -- --adjudication"
+        ),
+    )
     parser.add_argument("--assign", action="store_true", help="buat data/assignments.csv")
     parser.add_argument(
         "--people", default=None, help="daftar anotator, mis. kesan,budi,ani,dina"
@@ -1131,6 +1246,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--limit", type=int, default=None, help="batasi jumlah adegan")
     args = parser.parse_args(argv)
+
+    if args.adjudication:
+        print("Layar adjudikasi dijalankan lewat Streamlit, bukan python langsung:")
+        print("  uv run streamlit run scripts/07_annotate.py -- --adjudication")
+        return 1
 
     cfg = load_config(args.config)
     if args.assign:

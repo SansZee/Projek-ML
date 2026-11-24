@@ -936,20 +936,25 @@ dibagi rata. Butir yang dinilai keempat orang (gold) jatuh ke yang bebannya
 paling kecil, karena semuanya sama-sama penilai. Pembagian lama dipakai ulang
 setiap skrip dijalankan, jadi kepemilikan butir tidak berpindah.
 
-Cara memutuskan: buka layarnya, bukan CSV-nya.
+Cara memutuskan: buka layar yang sama, dengan mode adjudikasi.
 
 ```bash
-uv run streamlit run scripts/08b_adjudikasi.py
+uv run streamlit run scripts/07_annotate.py -- --adjudication
 ```
 
-Pilih namamu di sidebar; hanya butir untukmu yang muncul. Layar menampilkan
-video adegan yang langsung mulai di ujaran itu, strip wajah 25/50/75%, teks
-ujaran, dan `suara` tiap penilai tanpa nama (supaya keputusan tidak dibimbing
-"siapa yang bilang"). Tombol `1`–`7` memilih kelas, `8` ambigu, `0` tidak
-layak — sama seperti aplikasi pelabelan. Setiap klik langsung menulis
-`decision` + `decided_by` ke `adjudication.csv`, lalu lanjut ke butir
-berikutnya. Sesi bisa ditutup kapan saja; yang sudah terisi tidak ditanya
-lagi.
+Tampilannya aplikasi 07 yang biasa — `U` ulang potongan, putar otomatis,
+video penuh, warna kelas, `←`/`→` — hanya sumbernya `adjudication.csv` dan
+yang disimpan kolom `decision`. Pilih namamu di sidebar; hanya butir untukmu
+yang muncul. Layar menampilkan video adegan yang langsung mulai di ujaran itu,
+strip wajah 25/50/75%, teks ujaran, dan `suara` tiap penilai tanpa nama
+(supaya keputusan tidak dibimbing "siapa yang bilang"). Tombol `1`–`7` memilih
+kelas, `8` ambigu, `0` tidak layak. Setiap klik langsung menulis `decision` +
+`decided_by` ke `adjudication.csv`, lalu lanjut ke butir berikutnya. Sesi bisa
+ditutup kapan saja; yang sudah terisi tidak ditanya lagi.
+
+Kalau preview sebuah adegan belum ada di laptop itu, mode adjudikasi
+memperingatkan dan tetap menampilkan butirnya — tidak berhenti seperti mode
+pelabelan — supaya keputusan tidak tertahan hanya karena satu video.
 
 Kalau lebih suka tanpa aplikasi, kolom `decision` boleh diisi langsung di
 `adjudication.csv`, lalu jalankan `08_agree.py` lagi. Keputusan yang sudah

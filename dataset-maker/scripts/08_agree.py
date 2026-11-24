@@ -18,10 +18,10 @@ keputusan koordinator, angkanya akan naik sendiri dan tidak jujur.
 Adjudikasi:
 
   uv run python scripts/08_agree.py                    # hitung + tulis daftar
-  uv run streamlit run scripts/08b_adjudikasi.py        # putuskan dengan video
+  uv run streamlit run scripts/07_annotate.py -- --adjudication
   uv run python scripts/08_agree.py                    # terapkan keputusan
 
-Aplikasi ``08b_adjudikasi.py`` menampilkan hanya butir yang ditetapkan untuk
+Layar adjudikasi aplikasi 07 menampilkan hanya butir yang ditetapkan untuk
 satu orang (kolom ``adjudicator``), lengkap dengan video, strip wajah, dan
 suara tiap penilai. Kalau tidak memakai aplikasi, kolom ``decision`` bisa
 diisi langsung di CSV.
@@ -399,7 +399,8 @@ def main(argv: list[str] | None = None) -> int:
         load = adjudication["adjudicator"].replace("", "belum dibagi").value_counts()
         print("  pembagian: " + " · ".join(f"{name} {n}" for name, n in load.items()))
         print(
-            "  putuskan lewat aplikasi: uv run streamlit run scripts/08b_adjudikasi.py"
+            "  putuskan lewat aplikasi: uv run streamlit run scripts/07_annotate.py"
+            " -- --adjudication"
         )
         print("  atau isi kolom decision, lalu jalankan skrip ini lagi.")
     print()
