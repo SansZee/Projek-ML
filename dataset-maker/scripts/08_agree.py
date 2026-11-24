@@ -18,8 +18,13 @@ keputusan koordinator, angkanya akan naik sendiri dan tidak jujur.
 Adjudikasi:
 
   uv run python scripts/08_agree.py                    # hitung + tulis daftar
-  # isi kolom decision pada data/adjudication.csv
+  uv run streamlit run scripts/08b_adjudikasi.py        # putuskan dengan video
   uv run python scripts/08_agree.py                    # terapkan keputusan
+
+Aplikasi ``08b_adjudikasi.py`` menampilkan hanya butir yang ditetapkan untuk
+satu orang (kolom ``adjudicator``), lengkap dengan video, strip wajah, dan
+suara tiap penilai. Kalau tidak memakai aplikasi, kolom ``decision`` bisa
+diisi langsung di CSV.
 
 Keputusan yang sudah diisi disimpan kembali di ``adjudication.csv``, jadi
 riwayatnya tidak hilang saat skrip dijalankan ulang. Kalau label mentah
@@ -303,7 +308,27 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     final = agree.final_rows(votes)
-    adjudication = agree.adjudication_rows(votes)
+
+    roster = sorted(labels["annotator"].astype(str).unique())
+    previous_assignee: dict[str, str] = {}
+    if adjudication_path.exists():
+        previous = pd.read_csv(adjudication_path)
+        if "adjudicator" in previous.columns:
+            previous_assignee = dict(
+                zip(
+                    previous["utterance_id"].astype(str),
+                    previous["adjudicator"].fillna("").astype(str),
+                    strict=False,
+                )
+            )
+    needing = votes.loc[
+        votes["status"].isin((agree.STATUS_PENDING, agree.STATUS_DECIDED)),
+        "utterance_id",
+    ]
+    assignment = agree.assign_adjudicators(
+        labels, roster, needing, existing=previous_assignee
+    )
+    adjudication = agree.adjudication_rows(votes, adjudicator=assignment)
 
     data_dir.mkdir(parents=True, exist_ok=True)
     final.to_csv(data_dir / FINAL, index=False)
@@ -371,10 +396,12 @@ def main(argv: list[str] | None = None) -> int:
     if pending:
         print()
         print(f"{pending} ujaran perlu diputuskan → {data_dir / ADJUDICATION}")
+        load = adjudication["adjudicator"].replace("", "belum dibagi").value_counts()
+        print("  pembagian: " + " · ".join(f"{name} {n}" for name, n in load.items()))
         print(
-            "Isi kolom decision (kelas / ambigu / tidak_layak), lalu jalankan "
-            "skrip ini lagi."
+            "  putuskan lewat aplikasi: uv run streamlit run scripts/08b_adjudikasi.py"
         )
+        print("  atau isi kolom decision, lalu jalankan skrip ini lagi.")
     print()
     print(f"label akhir → {data_dir / FINAL} ({len(final)} ujaran)")
     print(f"laporan     → {data_dir / REPORT}")

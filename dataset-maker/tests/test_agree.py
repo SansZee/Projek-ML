@@ -246,3 +246,60 @@ def test_agreement_table_has_a_row_per_basis():
     _, table = agree.agreement_table(make_labels(rows), min_items=1)
     assert {"gold", "silang", "milik", "semua"} <= set(table["basis"])
     assert (table["metode"] == "fleiss").any()
+
+
+def rating_rows(pairs: dict[str, list[str]]) -> pd.DataFrame:
+    base = {"film_id": "AAA01", "scene_id": "AAA01-S001", "labeled_at": ""}
+    rows = [
+        {**base, "annotator": person, "utterance_id": uid, "role": "silang",
+         "label": "netral", "confidence": 3}
+        for uid, people in pairs.items()
+        for person in people
+    ]
+    return make_labels(rows)
+
+
+def test_adjudicator_never_decides_a_tie_they_rated():
+    labels = rating_rows({"u1": ["kesan", "budi"], "u2": ["kesan", "ani"]})
+    assignment = agree.assign_adjudicators(
+        labels, ["kesan", "budi", "ani"], ["u1", "u2"]
+    )
+    assert assignment == {"u1": "ani", "u2": "budi"}
+
+
+def test_adjudicators_are_spread_evenly_when_many_are_free():
+    labels = rating_rows({f"u{index}": ["kesan", "budi"] for index in range(6)})
+    assignment = agree.assign_adjudicators(
+        labels, ["ani", "budi", "kesan", "maul"], [f"u{index}" for index in range(6)]
+    )
+    loads = pd.Series(list(assignment.values())).value_counts()
+    assert set(loads.index) <= {"ani", "maul"}
+    assert loads.max() - loads.min() <= 1
+
+
+def test_adjudicator_assignment_is_kept_across_runs():
+    labels = rating_rows({"u1": ["kesan", "budi"], "u2": ["kesan", "budi"]})
+    first = agree.assign_adjudicators(labels, ["kesan", "budi", "ani"], ["u1", "u2"])
+    second = agree.assign_adjudicators(
+        labels, ["kesan", "budi", "ani"], ["u2"], existing=first
+    )
+    assert second["u2"] == first["u2"]
+
+
+def test_save_decision_updates_one_row_and_keeps_the_rest(tmp_path):
+    path = tmp_path / "adjudication.csv"
+    frame = pd.DataFrame(
+        [
+            {"utterance_id": "u1", "decision": "", "decided_by": "", "notes": ""},
+            {"utterance_id": "u2", "decision": "", "decided_by": "", "notes": ""},
+        ]
+    )
+    frame.to_csv(path, index=False)
+
+    agree.save_decision(path, "u2", "senang", decided_by="kesan", notes="jelas")
+
+    saved = pd.read_csv(path, keep_default_na=False).set_index("utterance_id")
+    assert saved.loc["u2", "decision"] == "senang"
+    assert saved.loc["u2", "decided_by"] == "kesan"
+    assert saved.loc["u1", "decision"] == ""
+    assert not path.with_suffix(".csv.tmp").exists()

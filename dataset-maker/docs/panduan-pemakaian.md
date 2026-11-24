@@ -695,7 +695,7 @@ Dijelaskan cara membuatnya di bagian 8; arti berkasnya:
 | `assignments.csv` | tugas per anotator (`milik`, `gold`, `silang`) |
 | `labels_<nama>.csv` | label mentah per anotator, satu baris per klik |
 | `labels_final.csv` | label akhir setelah mayoritas/adjudikasi |
-| `adjudication.csv` | ujaran tanpa mayoritas + kolom `decision` |
+| `adjudication.csv` | ujaran tanpa mayoritas + `adjudicator`, `decision` |
 | `selected.csv` | klip terpilih + `clip_id`, label, durasi, aktor |
 | `clips.csv` | katalog media: path relatif, ukuran, status potong |
 | `splits.csv` | `split_A`, `split_B`, `split_C` untuk tiap klip |
@@ -921,7 +921,7 @@ Keluaran:
 
 ```
 data/labels_final.csv     utterance_id, label, confidence, n_raters, agreement, status
-data/adjudication.csv     ujaran tanpa mayoritas + kolom decision
+data/adjudication.csv     ujaran tanpa mayoritas + adjudicator, decision
 data/agreement_report.md  cakupan, matriks irisan, tabel kappa
 data/agreement_meta.json  angka kappa dan jumlah butir
 ```
@@ -930,11 +930,31 @@ Koordinator menulis laporan kappa dari `agreement_report.md`. Tafsirnya
 memakai Landis & Koch: di bawah 0,20 kesepakatan sedikit, 0,20–0,40 cukup,
 0,40–0,60 sedang, 0,60–0,80 baik, di atas 0,80 sangat baik.
 
-**Adjudikasi.** Buka `data/adjudication.csv`, isi kolom `decision` dengan salah
-satu kelas, `ambigu`, atau `tidak_layak`, isi `decided_by`, lalu jalankan
-skrip ini lagi. Keputusan yang sudah diisi tetap tersimpan di
-`adjudication.csv`, jadi riwayatnya tidak hilang. Kalau label mentah berubah
-dan keputusan lama ingin dibuang, pakai `--reset-decisions`.
+**Adjudikasi.** `08_agree.py` mengisi kolom `adjudicator` sendiri: butir
+dibagikan ke anggota yang **tidak ikut menilai** ujaran itu, dengan beban
+dibagi rata. Butir yang dinilai keempat orang (gold) jatuh ke yang bebannya
+paling kecil, karena semuanya sama-sama penilai. Pembagian lama dipakai ulang
+setiap skrip dijalankan, jadi kepemilikan butir tidak berpindah.
+
+Cara memutuskan: buka layarnya, bukan CSV-nya.
+
+```bash
+uv run streamlit run scripts/08b_adjudikasi.py
+```
+
+Pilih namamu di sidebar; hanya butir untukmu yang muncul. Layar menampilkan
+video adegan yang langsung mulai di ujaran itu, strip wajah 25/50/75%, teks
+ujaran, dan `suara` tiap penilai tanpa nama (supaya keputusan tidak dibimbing
+"siapa yang bilang"). Tombol `1`–`7` memilih kelas, `8` ambigu, `0` tidak
+layak — sama seperti aplikasi pelabelan. Setiap klik langsung menulis
+`decision` + `decided_by` ke `adjudication.csv`, lalu lanjut ke butir
+berikutnya. Sesi bisa ditutup kapan saja; yang sudah terisi tidak ditanya
+lagi.
+
+Kalau lebih suka tanpa aplikasi, kolom `decision` boleh diisi langsung di
+`adjudication.csv`, lalu jalankan `08_agree.py` lagi. Keputusan yang sudah
+diisi tetap tersimpan, jadi riwayatnya tidak hilang. Kalau label mentah
+berubah dan keputusan lama ingin dibuang, pakai `--reset-decisions`.
 
 Ujaran yang belum diputuskan tidak masuk `labels_final.csv`, sehingga tahap
 seleksi tidak akan mengambilnya. Jumlahnya dicetak di akhir skrip.

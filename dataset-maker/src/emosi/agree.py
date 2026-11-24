@@ -25,9 +25,11 @@ Itulah gunanya gold set dan tukar silang di tahap 07.
 from __future__ import annotations
 
 import math
+import os
 from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import combinations
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -65,6 +67,7 @@ ADJUDICATION_COLUMNS = [
     "n_raters",
     "suara",
     "status",
+    "adjudicator",
     "decision",
     "decided_by",
     "notes",
@@ -405,7 +408,9 @@ def final_rows(votes: pd.DataFrame) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
-def adjudication_rows(votes: pd.DataFrame) -> pd.DataFrame:
+def adjudication_rows(
+    votes: pd.DataFrame, adjudicator: dict[str, str] | None = None
+) -> pd.DataFrame:
     """Daftar ujaran yang perlu diputuskan manusia, plus yang sudah diputuskan.
 
     Baris yang sudah diputuskan tetap ditulis supaya jejak keputusannya tidak
@@ -415,12 +420,82 @@ def adjudication_rows(votes: pd.DataFrame) -> pd.DataFrame:
     for column in ADJUDICATION_COLUMNS:
         if column not in pending.columns:
             pending[column] = ""
+    pending["adjudicator"] = (
+        pending["utterance_id"].astype(str).map(adjudicator or {}).fillna("")
+    )
     # Baris yang sudah diputuskan tetap membawa keputusannya supaya jejaknya
     # tidak hilang saat skrip dijalankan ulang.
     pending.loc[pending["status"] == STATUS_DECIDED, "decision"] = pending.loc[
         pending["status"] == STATUS_DECIDED, "label"
     ]
     return pending[ADJUDICATION_COLUMNS].reset_index(drop=True)
+
+
+def assign_adjudicators(
+    labels: pd.DataFrame,
+    roster: Iterable[str],
+    utterance_ids: Iterable[str],
+    *,
+    existing: dict[str, str] | None = None,
+) -> dict[str, str]:
+    """Bagi butir adjudikasi ke orang yang tidak ikut menilainya.
+
+    Penilai tidak boleh memutuskan perselisihannya sendiri, jadi kandidatnya
+    adalah anggota roster yang tidak muncul sebagai penilai ujaran itu. Kalau
+    keempat orang menilai (gold), semua sama-sama penilai dan dipilih yang
+    bebannya paling kecil. Pembagian lama dipakai ulang supaya kepemilikan
+    butir tidak berpindah saat skrip dijalankan lagi.
+    """
+    people = [str(person) for person in roster]
+    raters = {
+        str(uid): {str(name) for name in group["annotator"]}
+        for uid, group in labels.groupby("utterance_id", sort=False)
+    }
+    load = dict.fromkeys(people, 0)
+    result: dict[str, str] = {}
+    for uid, person in (existing or {}).items():
+        if str(person) in load:
+            result[str(uid)] = str(person)
+            load[str(person)] += 1
+    for uid in sorted({str(value) for value in utterance_ids}):
+        if uid in result or uid not in raters:
+            continue
+        free = [person for person in people if person not in raters[uid]] or people
+        pick = min(free, key=lambda person: (load[person], people.index(person)))
+        result[uid] = pick
+        load[pick] += 1
+    return result
+
+
+def save_decision(
+    path: Path,
+    utterance_id: str,
+    decision: str,
+    decided_by: str = "",
+    notes: str = "",
+) -> pd.DataFrame:
+    """Tulis satu keputusan ke ``adjudication.csv`` dengan cara atomik."""
+    path = Path(path)
+    frame = pd.read_csv(path)
+    mask = frame["utterance_id"].astype(str) == str(utterance_id)
+    if not mask.any():
+        raise KeyError(f"{utterance_id} tidak ada di {path.name}")
+    for column in ("decision", "decided_by", "notes"):
+        if column not in frame.columns:
+            frame[column] = ""
+        # Sel kosong terbaca sebagai NaN; samakan ke teks supaya menulis satu
+        # keputusan tidak mengubah tipe kolom dan mengosongkan baris lain.
+        frame[column] = frame[column].fillna("").astype(str)
+    for column, value in (
+        ("decision", decision),
+        ("decided_by", decided_by),
+        ("notes", notes),
+    ):
+        frame.loc[mask, column] = str(value)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    frame.to_csv(temporary, index=False)
+    os.replace(temporary, path)
+    return frame
 
 
 def _text(value: object) -> str:
