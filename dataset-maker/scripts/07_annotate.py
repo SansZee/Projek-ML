@@ -306,12 +306,18 @@ def run_prepare(cfg: Config, args) -> int:
             )
 
     if not args.no_faces:
-        build_face_strips(
-            cfg,
-            {str(value) for value in needs["scene_id"]},
-            times,
-            force=args.force,
-        )
+        strip_scenes = {str(value) for value in needs["scene_id"]}
+        # Butir adjudikasi tidak ada di assignments.csv, padahal layarnya juga
+        # menampilkan strip wajah. Adegannya ikut disiapkan kalau file itu ada.
+        adjudication_path = data_dir / ADJUDICATION
+        if adjudication_path.exists():
+            adjudication = pd.read_csv(adjudication_path)
+            if args.annotator and "adjudicator" in adjudication.columns:
+                adjudication = adjudication[
+                    adjudication["adjudicator"].astype(str) == str(args.annotator)
+                ]
+            strip_scenes |= set(adjudication["scene_id"].astype(str))
+        build_face_strips(cfg, strip_scenes, times, force=args.force)
 
     if unavailable:
         print()

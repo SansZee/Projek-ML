@@ -33,27 +33,13 @@ import pandas as pd
 from tqdm import tqdm
 
 from emosi import cut, face
+from emosi.clips import CATALOG_COLUMNS
 from emosi.config import Config, load_config
 from emosi.media import require_tools
 
 CATALOG = "clips.csv"
 FACE_FPS = 5.0
 
-CATALOG_COLUMNS = [
-    "clip_id",
-    "utterance_id",
-    "film_id",
-    "label",
-    "confidence",
-    "duration_s",
-    "clip_path",
-    "audio_path",
-    "face_path",
-    "clip_bytes",
-    "audio_bytes",
-    "face_bytes",
-    "status",
-]
 
 
 def face_settings(cfg: Config) -> face.FaceSettings:

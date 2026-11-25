@@ -796,6 +796,16 @@ Hasilnya `kiriman/preview-untuk-budi-<tanggal>.zip`. Penerima mengekstraknya
 sehingga isi `preview/` masuk ke `media/preview/`. Satu adegan sekitar 5 MB,
 jadi bungkus untuk satu orang biasanya 40–60 MB.
 
+`--prepare` juga membuat strip wajah untuk adegan yang ada di
+`assignments.csv` **dan** `adjudication.csv`. Jadi setelah preview adjudikasi
+diterima dan diekstrak, jalankan sekali lagi untuk melengkapi stripnya:
+
+```bash
+uv run python scripts/07_annotate.py --prepare --annotator kesan
+```
+
+Yang sudah ada dilewati, jadi perintah ini murah dan aman diulang.
+
 Opsi lain: `--force` (potong ulang), `--limit N` (uji cepat), `--scale 480`,
 `--crf 30` (makin besar makin kecil berkasnya), `--no-faces` (lewati strip
 wajah).
@@ -987,6 +997,7 @@ laptop koordinator.
 ```bash
 uv run python scripts/09_select.py    # 600 per kelas, terpusat
 uv run python scripts/10_cut.py       # potong klip di laptop pemilik film
+uv run python scripts/10b_klip.py     # bungkus di laptop anggota, gabung di koordinator
 uv run python scripts/11_split.py     # split A/B/C, terpusat
 uv run python scripts/12_audit.py --predictions <prediksi.csv>
 uv run python scripts/13_stats.py     # dataset card
@@ -1043,31 +1054,34 @@ diredam antar frame supaya tidak goyang. `--no-faces` melewati bagian ini.
 (`ok`, `ada`, `film_tidak_ada`, `gagal`). Repo pelatihan membaca katalog ini,
 bukan folder media langsung.
 
-#### Serah terima media ke mesin latihan
+#### Serah terima media: `10b_klip.py`
 
-Sekali saja, setelah `10_cut.py` selesai untuk semua klip:
-
-1. Unggah **isi folder `media/`** (`clips/`, `audio/`, `faces/`) dan
-   `data/clips.csv` ke drive bersama, satu folder per pemilik:
-   `kiriman-media/<nama>/media/...` dan `<nama>/clips.csv`.
-2. Jangan lewat git. Ukurannya 3–6 GB untuk 3.000 klip; `.gitignore` dan hook
-   `pre-commit` memang menolaknya.
-3. Batas unggahan gratis (mis. Google Drive) biasanya 15 GB per akun, jadi
-   satu akun per anggota lebih aman daripada satu akun bersama.
-
-Mesin latihan menyusunnya kembali jadi satu tempat:
-
-```
-media/clips/<clip_id>.mp4
-media/audio/<clip_id>.wav
-media/faces/<clip_id>.mp4
-data/clips.csv
+```bash
+# di laptop masing-masing, setelah 10_cut.py selesai
+uv run python scripts/10b_klip.py --pack <namamu>
 ```
 
-`clips.csv` memakai path relatif (`clips/...`, `audio/...`, `faces/...`)
-terhadap folder `media/`, jadi isinya tidak perlu diubah. Kalau beberapa
-anggota mengirim `clips.csv`, gabungkan barisnya: `clip_id` sama dengan
-`utterance_id` sehingga tidak bentrok.
+Hasilnya `kiriman/clips-<nama>-<tanggal>.zip` berisi `clips/`, `audio/`,
+`faces/`, `clips.csv` (hanya baris milik pengirim) dan `manifest.json` — tanpa
+kompresi, jadi membungkus ±400 MB selesai dalam hitungan detik. Kirim zip itu;
+tidak ada berkas lain yang perlu disalin.
+
+Di laptop koordinator:
+
+```bash
+uv run python scripts/10b_klip.py --gabung
+```
+
+Skrip membaca semua `kiriman/clips-*.zip`, memeriksa bahwa `clip_id` tidak
+ganda, film memang milik pengirimnya, berkasnya ada di zip, dan ukurannya
+cocok dengan katalog. Lalu ia mengekstrak ke `media/` (berkas yang sudah ada
+dengan ukuran sama dilewati), menyusun `data/clips.csv` final, dan mencetak
+daftar klip yang belum dikirim per pemilik dan film.
+
+Katalog final tetap 3.300 baris: `ok` untuk yang terkumpul, `hilang` untuk
+yang belum. `13_stats.py` membaca angka itu, jadi kartu dataset akan
+memperingatkan kalau belum lengkap. Jangan menggabungkan `clips.csv` manual —
+pemeriksaan di atas hilang begitu kolomnya disalin sendiri.
 
 ### 8.3 `11_split.py` — tiga varian split
 
@@ -1122,7 +1136,9 @@ peringatan bahwa media belum lengkap.
 
 ## 9. Serah terima ke koordinator
 
-Satu perintah, jangan salin berkas manual:
+Ada dua serah terima, dan keduanya satu perintah.
+
+**Metadata** (tahap 00–06), jangan salin berkas manual:
 
 ```bash
 uv run python scripts/05_merge.py --pack <namamu>
@@ -1157,8 +1173,10 @@ Jangan kirim `media/`, `clips/`, atau `audio/`; ukurannya besar dan bisa dibuat
 ulang di laptop pemilik film. Folder `kiriman/` sudah masuk `.gitignore`.
 
 Media punya jalur sendiri dan waktunya lain: setelah koordinator menjalankan
-`09_select.py`, pemilik film menjalankan `10_cut.py`, lalu mengunggah media ke
-drive bersama (§8.2). Jangan mencampurnya ke zip `--pack`.
+`09_select.py`, pemilik film menjalankan `10_cut.py`, lalu
+`10b_klip.py --pack <nama>` dan mengirim `kiriman/clips-<nama>-<tanggal>.zip`
+(§8.2). Koordinator menjalankan `10b_klip.py --gabung`. Jangan mencampurnya ke
+zip `--pack`; keduanya berisi hal yang berbeda.
 
 Koordinator tidak menempel `*.csv` mentah. Ia menjalankan
 `05_merge.py --from kiriman/`, yang memeriksa hash config, kelengkapan
