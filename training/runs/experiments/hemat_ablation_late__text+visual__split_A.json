@@ -1,0 +1,348 @@
+{
+  "name": "hemat_ablation_late__text+visual",
+  "split": "split_A",
+  "best_params": {
+    "lr": 0.0001535528683888687,
+    "proj_dim": 128,
+    "num_layers": 1,
+    "num_heads": 8,
+    "dropout": 0.3803345035229626,
+    "weight_decay": 0.0026070247583707684,
+    "batch_size": 32,
+    "loss_fn": "weighted_ce",
+    "modality_dropout": 0.045851127463358454
+  },
+  "macro_f1_mean": 0.4296,
+  "macro_f1_std": 0.0197,
+  "accuracy_mean": 0.4751,
+  "accuracy_std": 0.024,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.438,
+      "test_macro_f1": 0.4438,
+      "test_accuracy": 0.496,
+      "per_class_f1": {
+        "senang": 0.6417112299465241,
+        "sedih": 0.4966442953020134,
+        "marah": 0.5030674846625767,
+        "takut": 0.4383561643835616,
+        "netral": 0.4897959183673469,
+        "terkejut": 0.39416058394160586,
+        "jijik": 0.14285714285714285
+      },
+      "confusion_matrix": [
+        [
+          60,
+          3,
+          4,
+          2,
+          17,
+          4,
+          0
+        ],
+        [
+          4,
+          37,
+          3,
+          9,
+          13,
+          6,
+          0
+        ],
+        [
+          5,
+          12,
+          41,
+          4,
+          8,
+          15,
+          0
+        ],
+        [
+          4,
+          10,
+          14,
+          32,
+          12,
+          15,
+          0
+        ],
+        [
+          17,
+          4,
+          7,
+          5,
+          48,
+          8,
+          1
+        ],
+        [
+          6,
+          9,
+          9,
+          5,
+          4,
+          27,
+          0
+        ],
+        [
+          1,
+          2,
+          0,
+          2,
+          4,
+          2,
+          1
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__text+visual__split_A__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.3957,
+      "test_macro_f1": 0.4018,
+      "test_accuracy": 0.4415,
+      "per_class_f1": {
+        "senang": 0.6,
+        "sedih": 0.41739130434782606,
+        "marah": 0.430939226519337,
+        "takut": 0.46408839779005523,
+        "netral": 0.4,
+        "terkejut": 0.3464566929133858,
+        "jijik": 0.15384615384615385
+      },
+      "confusion_matrix": [
+        [
+          48,
+          1,
+          8,
+          4,
+          26,
+          3,
+          0
+        ],
+        [
+          4,
+          24,
+          8,
+          12,
+          13,
+          11,
+          0
+        ],
+        [
+          4,
+          5,
+          39,
+          13,
+          15,
+          9,
+          0
+        ],
+        [
+          1,
+          0,
+          13,
+          42,
+          14,
+          17,
+          0
+        ],
+        [
+          6,
+          7,
+          16,
+          14,
+          43,
+          4,
+          0
+        ],
+        [
+          5,
+          5,
+          10,
+          7,
+          11,
+          22,
+          0
+        ],
+        [
+          2,
+          1,
+          2,
+          2,
+          3,
+          1,
+          1
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__text+visual__split_A__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.4229,
+      "test_macro_f1": 0.4433,
+      "test_accuracy": 0.4879,
+      "per_class_f1": {
+        "senang": 0.5964912280701754,
+        "sedih": 0.5151515151515151,
+        "marah": 0.5074626865671642,
+        "takut": 0.49411764705882355,
+        "netral": 0.44919786096256686,
+        "terkejut": 0.37383177570093457,
+        "jijik": 0.16666666666666666
+      },
+      "confusion_matrix": [
+        [
+          51,
+          4,
+          11,
+          2,
+          19,
+          1,
+          2
+        ],
+        [
+          4,
+          34,
+          8,
+          15,
+          6,
+          2,
+          3
+        ],
+        [
+          4,
+          8,
+          51,
+          7,
+          10,
+          5,
+          0
+        ],
+        [
+          3,
+          3,
+          17,
+          42,
+          11,
+          10,
+          1
+        ],
+        [
+          12,
+          3,
+          16,
+          8,
+          42,
+          7,
+          2
+        ],
+        [
+          6,
+          7,
+          12,
+          8,
+          5,
+          20,
+          2
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          4,
+          2,
+          2
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__text+visual__split_A__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.6417112299465241,
+    "sedih": 0.4966442953020134,
+    "marah": 0.5030674846625767,
+    "takut": 0.4383561643835616,
+    "netral": 0.4897959183673469,
+    "terkejut": 0.39416058394160586,
+    "jijik": 0.14285714285714285
+  },
+  "best_seed_confusion_matrix": [
+    [
+      60,
+      3,
+      4,
+      2,
+      17,
+      4,
+      0
+    ],
+    [
+      4,
+      37,
+      3,
+      9,
+      13,
+      6,
+      0
+    ],
+    [
+      5,
+      12,
+      41,
+      4,
+      8,
+      15,
+      0
+    ],
+    [
+      4,
+      10,
+      14,
+      32,
+      12,
+      15,
+      0
+    ],
+    [
+      17,
+      4,
+      7,
+      5,
+      48,
+      8,
+      1
+    ],
+    [
+      6,
+      9,
+      9,
+      5,
+      4,
+      27,
+      0
+    ],
+    [
+      1,
+      2,
+      0,
+      2,
+      4,
+      2,
+      1
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\hemat_ablation_late__text+visual__split_A.csv"
+}

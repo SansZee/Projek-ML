@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+cache/
+runs/checkpoints/
+runs/logits/
+runs/smoke/
+*.pt
+*.pth
+*.npz
+*.tmp

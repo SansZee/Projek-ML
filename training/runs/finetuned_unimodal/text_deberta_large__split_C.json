@@ -1,0 +1,92 @@
+{
+  "model_key": "text_deberta_large",
+  "tier": "maksimal",
+  "modality": "text",
+  "split": "split_C",
+  "seed": 42,
+  "val_macro_f1": 0.2356,
+  "test_macro_f1": 0.2233,
+  "test_accuracy": 0.2687,
+  "per_class_f1": {
+    "senang": 0.2517482517482518,
+    "sedih": 0.2236024844720497,
+    "marah": 0.16666666666666666,
+    "takut": 0.1986754966887417,
+    "netral": 0.4423076923076923,
+    "terkejut": 0.2802547770700637,
+    "jijik": 0.0
+  },
+  "confusion_matrix": [
+    [
+      18,
+      17,
+      4,
+      6,
+      12,
+      15,
+      0
+    ],
+    [
+      6,
+      18,
+      2,
+      6,
+      8,
+      5,
+      0
+    ],
+    [
+      18,
+      33,
+      14,
+      16,
+      29,
+      27,
+      0
+    ],
+    [
+      11,
+      23,
+      4,
+      15,
+      19,
+      24,
+      0
+    ],
+    [
+      11,
+      18,
+      2,
+      3,
+      46,
+      5,
+      0
+    ],
+    [
+      7,
+      7,
+      5,
+      9,
+      8,
+      22,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0
+    ]
+  ],
+  "vram_plan": {
+    "micro_bs": 8,
+    "grad_accum": 2,
+    "peak_allocated_gb": 0.065,
+    "peak_reserved_gb": 0.113
+  },
+  "cache_path": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\cache\\finetuned\\split_C\\text_deberta_large.pt",
+  "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\text_deberta_large__split_C__seed42.csv"
+}

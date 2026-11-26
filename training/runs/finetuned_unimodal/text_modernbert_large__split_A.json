@@ -1,0 +1,92 @@
+{
+  "model_key": "text_modernbert_large",
+  "tier": "maksimal",
+  "modality": "text",
+  "split": "split_A",
+  "seed": 42,
+  "val_macro_f1": 0.2609,
+  "test_macro_f1": 0.2717,
+  "test_accuracy": 0.3105,
+  "per_class_f1": {
+    "senang": 0.34444444444444444,
+    "sedih": 0.37410071942446044,
+    "marah": 0.30687830687830686,
+    "takut": 0.22784810126582278,
+    "netral": 0.32160804020100503,
+    "terkejut": 0.32727272727272727,
+    "jijik": 0.0
+  },
+  "confusion_matrix": [
+    [
+      31,
+      10,
+      13,
+      8,
+      24,
+      4,
+      0
+    ],
+    [
+      9,
+      26,
+      16,
+      6,
+      13,
+      2,
+      0
+    ],
+    [
+      9,
+      15,
+      29,
+      16,
+      9,
+      5,
+      2
+    ],
+    [
+      13,
+      7,
+      14,
+      18,
+      20,
+      14,
+      1
+    ],
+    [
+      14,
+      4,
+      20,
+      13,
+      32,
+      5,
+      2
+    ],
+    [
+      10,
+      4,
+      11,
+      9,
+      8,
+      18,
+      0
+    ],
+    [
+      4,
+      1,
+      1,
+      1,
+      3,
+      2,
+      0
+    ]
+  ],
+  "vram_plan": {
+    "micro_bs": 8,
+    "grad_accum": 2,
+    "peak_allocated_gb": 0.067,
+    "peak_reserved_gb": 0.133
+  },
+  "cache_path": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\cache\\finetuned\\split_A\\text_modernbert_large.pt",
+  "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\text_modernbert_large__split_A__seed42.csv"
+}

@@ -1,0 +1,348 @@
+{
+  "name": "hemat_ablation_late__text",
+  "split": "split_C",
+  "best_params": {
+    "lr": 6.0758085133366966e-05,
+    "proj_dim": 256,
+    "num_layers": 1,
+    "num_heads": 4,
+    "dropout": 0.23661147045343367,
+    "weight_decay": 0.0009780337016659412,
+    "batch_size": 32,
+    "loss_fn": "label_smooth_0.1",
+    "modality_dropout": 0.1300170052944527
+  },
+  "macro_f1_mean": 0.2726,
+  "macro_f1_std": 0.0105,
+  "accuracy_mean": 0.334,
+  "accuracy_std": 0.016,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.29,
+      "test_macro_f1": 0.2696,
+      "test_accuracy": 0.3293,
+      "per_class_f1": {
+        "senang": 0.34523809523809523,
+        "sedih": 0.2222222222222222,
+        "marah": 0.4166666666666667,
+        "takut": 0.1437908496732026,
+        "netral": 0.4512820512820513,
+        "terkejut": 0.3076923076923077,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          29,
+          7,
+          9,
+          6,
+          11,
+          10,
+          0
+        ],
+        [
+          6,
+          14,
+          4,
+          10,
+          5,
+          6,
+          0
+        ],
+        [
+          19,
+          22,
+          45,
+          15,
+          20,
+          16,
+          0
+        ],
+        [
+          16,
+          19,
+          13,
+          11,
+          21,
+          16,
+          0
+        ],
+        [
+          11,
+          12,
+          7,
+          8,
+          44,
+          3,
+          0
+        ],
+        [
+          14,
+          7,
+          1,
+          7,
+          9,
+          20,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__text__split_C__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.2939,
+      "test_macro_f1": 0.2868,
+      "test_accuracy": 0.3556,
+      "per_class_f1": {
+        "senang": 0.3458646616541353,
+        "sedih": 0.26153846153846155,
+        "marah": 0.3888888888888889,
+        "takut": 0.1986754966887417,
+        "netral": 0.5126050420168067,
+        "terkejut": 0.3,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          23,
+          10,
+          8,
+          5,
+          17,
+          9,
+          0
+        ],
+        [
+          3,
+          17,
+          5,
+          6,
+          10,
+          4,
+          0
+        ],
+        [
+          10,
+          24,
+          42,
+          16,
+          28,
+          17,
+          0
+        ],
+        [
+          7,
+          20,
+          14,
+          15,
+          28,
+          12,
+          0
+        ],
+        [
+          5,
+          8,
+          7,
+          2,
+          61,
+          2,
+          0
+        ],
+        [
+          13,
+          6,
+          3,
+          10,
+          8,
+          18,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          1,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__text__split_C__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.2971,
+      "test_macro_f1": 0.2615,
+      "test_accuracy": 0.3172,
+      "per_class_f1": {
+        "senang": 0.3401360544217687,
+        "sedih": 0.19642857142857142,
+        "marah": 0.2807017543859649,
+        "takut": 0.18848167539267016,
+        "netral": 0.47863247863247865,
+        "terkejut": 0.3458646616541353,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          25,
+          8,
+          3,
+          13,
+          12,
+          11,
+          0
+        ],
+        [
+          6,
+          11,
+          1,
+          8,
+          14,
+          5,
+          0
+        ],
+        [
+          11,
+          22,
+          24,
+          33,
+          30,
+          17,
+          0
+        ],
+        [
+          16,
+          13,
+          5,
+          18,
+          28,
+          16,
+          0
+        ],
+        [
+          8,
+          7,
+          1,
+          11,
+          56,
+          2,
+          0
+        ],
+        [
+          9,
+          6,
+          0,
+          11,
+          9,
+          23,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__text__split_C__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.3458646616541353,
+    "sedih": 0.26153846153846155,
+    "marah": 0.3888888888888889,
+    "takut": 0.1986754966887417,
+    "netral": 0.5126050420168067,
+    "terkejut": 0.3,
+    "jijik": 0.0
+  },
+  "best_seed_confusion_matrix": [
+    [
+      23,
+      10,
+      8,
+      5,
+      17,
+      9,
+      0
+    ],
+    [
+      3,
+      17,
+      5,
+      6,
+      10,
+      4,
+      0
+    ],
+    [
+      10,
+      24,
+      42,
+      16,
+      28,
+      17,
+      0
+    ],
+    [
+      7,
+      20,
+      14,
+      15,
+      28,
+      12,
+      0
+    ],
+    [
+      5,
+      8,
+      7,
+      2,
+      61,
+      2,
+      0
+    ],
+    [
+      13,
+      6,
+      3,
+      10,
+      8,
+      18,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\hemat_ablation_late__text__split_C.csv"
+}

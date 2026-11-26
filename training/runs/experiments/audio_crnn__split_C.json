@@ -1,0 +1,339 @@
+{
+  "name": "audio_crnn",
+  "split": "split_C",
+  "best_params": {
+    "lr": 0.0003
+  },
+  "macro_f1_mean": 0.1836,
+  "macro_f1_std": 0.0429,
+  "accuracy_mean": 0.2458,
+  "accuracy_std": 0.0425,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.1901,
+      "test_macro_f1": 0.127,
+      "test_accuracy": 0.1879,
+      "per_class_f1": {
+        "senang": 0.0935672514619883,
+        "sedih": 0.20853080568720378,
+        "marah": 0.08108108108108109,
+        "takut": 0.04040404040404041,
+        "netral": 0.3669064748201439,
+        "terkejut": 0.09876543209876543,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          8,
+          32,
+          0,
+          0,
+          31,
+          1,
+          0
+        ],
+        [
+          6,
+          22,
+          1,
+          1,
+          11,
+          4,
+          0
+        ],
+        [
+          44,
+          34,
+          6,
+          0,
+          45,
+          8,
+          0
+        ],
+        [
+          14,
+          38,
+          1,
+          2,
+          36,
+          5,
+          0
+        ],
+        [
+          16,
+          16,
+          1,
+          0,
+          51,
+          1,
+          0
+        ],
+        [
+          9,
+          24,
+          2,
+          0,
+          19,
+          4,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\audio_crnn__split_C__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.2027,
+      "test_macro_f1": 0.193,
+      "test_accuracy": 0.2606,
+      "per_class_f1": {
+        "senang": 0.1732283464566929,
+        "sedih": 0.16216216216216217,
+        "marah": 0.3904382470119522,
+        "takut": 0.10909090909090909,
+        "netral": 0.3249097472924188,
+        "terkejut": 0.19148936170212766,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          11,
+          6,
+          9,
+          11,
+          33,
+          2,
+          0
+        ],
+        [
+          6,
+          6,
+          6,
+          11,
+          11,
+          5,
+          0
+        ],
+        [
+          10,
+          5,
+          49,
+          18,
+          43,
+          12,
+          0
+        ],
+        [
+          13,
+          7,
+          14,
+          9,
+          46,
+          7,
+          0
+        ],
+        [
+          11,
+          4,
+          21,
+          3,
+          45,
+          1,
+          0
+        ],
+        [
+          3,
+          1,
+          14,
+          17,
+          14,
+          9,
+          0
+        ],
+        [
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\audio_crnn__split_C__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.2532,
+      "test_macro_f1": 0.2309,
+      "test_accuracy": 0.2889,
+      "per_class_f1": {
+        "senang": 0.27972027972027974,
+        "sedih": 0.24719101123595505,
+        "marah": 0.35714285714285715,
+        "takut": 0.17721518987341772,
+        "netral": 0.3609022556390977,
+        "terkejut": 0.1941747572815534,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          20,
+          9,
+          12,
+          3,
+          25,
+          2,
+          1
+        ],
+        [
+          6,
+          11,
+          3,
+          6,
+          15,
+          4,
+          0
+        ],
+        [
+          13,
+          5,
+          40,
+          25,
+          39,
+          15,
+          0
+        ],
+        [
+          13,
+          12,
+          11,
+          14,
+          36,
+          9,
+          1
+        ],
+        [
+          9,
+          6,
+          9,
+          7,
+          48,
+          5,
+          1
+        ],
+        [
+          10,
+          1,
+          11,
+          7,
+          17,
+          10,
+          2
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\audio_crnn__split_C__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.27972027972027974,
+    "sedih": 0.24719101123595505,
+    "marah": 0.35714285714285715,
+    "takut": 0.17721518987341772,
+    "netral": 0.3609022556390977,
+    "terkejut": 0.1941747572815534,
+    "jijik": 0.0
+  },
+  "best_seed_confusion_matrix": [
+    [
+      20,
+      9,
+      12,
+      3,
+      25,
+      2,
+      1
+    ],
+    [
+      6,
+      11,
+      3,
+      6,
+      15,
+      4,
+      0
+    ],
+    [
+      13,
+      5,
+      40,
+      25,
+      39,
+      15,
+      0
+    ],
+    [
+      13,
+      12,
+      11,
+      14,
+      36,
+      9,
+      1
+    ],
+    [
+      9,
+      6,
+      9,
+      7,
+      48,
+      5,
+      1
+    ],
+    [
+      10,
+      1,
+      11,
+      7,
+      17,
+      10,
+      2
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ]
+}

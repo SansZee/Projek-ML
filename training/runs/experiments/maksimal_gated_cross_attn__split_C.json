@@ -1,0 +1,348 @@
+{
+  "name": "maksimal_gated_cross_attn",
+  "split": "split_C",
+  "best_params": {
+    "lr": 0.00012439367209907224,
+    "proj_dim": 128,
+    "num_layers": 1,
+    "num_heads": 8,
+    "dropout": 0.3368209952651108,
+    "weight_decay": 0.0037183641805732083,
+    "batch_size": 32,
+    "loss_fn": "focal_gamma_2",
+    "modality_dropout": 0.04263103092182288
+  },
+  "macro_f1_mean": 0.2437,
+  "macro_f1_std": 0.0056,
+  "accuracy_mean": 0.3057,
+  "accuracy_std": 0.0125,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.2977,
+      "test_macro_f1": 0.2514,
+      "test_accuracy": 0.3232,
+      "per_class_f1": {
+        "senang": 0.2982456140350877,
+        "sedih": 0.0898876404494382,
+        "marah": 0.4291845493562232,
+        "takut": 0.32599118942731276,
+        "netral": 0.3557692307692308,
+        "terkejut": 0.2608695652173913,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          17,
+          4,
+          12,
+          17,
+          16,
+          5,
+          1
+        ],
+        [
+          2,
+          4,
+          9,
+          14,
+          9,
+          7,
+          0
+        ],
+        [
+          2,
+          16,
+          50,
+          20,
+          33,
+          16,
+          0
+        ],
+        [
+          4,
+          10,
+          11,
+          37,
+          23,
+          11,
+          0
+        ],
+        [
+          9,
+          9,
+          2,
+          24,
+          37,
+          3,
+          1
+        ],
+        [
+          7,
+          1,
+          11,
+          19,
+          5,
+          15,
+          0
+        ],
+        [
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_gated_cross_attn__split_C__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.2743,
+      "test_macro_f1": 0.2414,
+      "test_accuracy": 0.299,
+      "per_class_f1": {
+        "senang": 0.2833333333333333,
+        "sedih": 0.11382113821138211,
+        "marah": 0.39603960396039606,
+        "takut": 0.3389830508474576,
+        "netral": 0.31527093596059114,
+        "terkejut": 0.24242424242424243,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          17,
+          7,
+          4,
+          13,
+          23,
+          4,
+          4
+        ],
+        [
+          5,
+          7,
+          4,
+          14,
+          7,
+          8,
+          0
+        ],
+        [
+          6,
+          25,
+          40,
+          35,
+          23,
+          8,
+          0
+        ],
+        [
+          2,
+          16,
+          8,
+          40,
+          23,
+          7,
+          0
+        ],
+        [
+          8,
+          19,
+          1,
+          22,
+          32,
+          2,
+          1
+        ],
+        [
+          9,
+          4,
+          7,
+          16,
+          10,
+          12,
+          0
+        ],
+        [
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_gated_cross_attn__split_C__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.2721,
+      "test_macro_f1": 0.2383,
+      "test_accuracy": 0.2949,
+      "per_class_f1": {
+        "senang": 0.2896551724137931,
+        "sedih": 0.0898876404494382,
+        "marah": 0.37185929648241206,
+        "takut": 0.3137254901960784,
+        "netral": 0.3236994219653179,
+        "terkejut": 0.27906976744186046,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          21,
+          5,
+          8,
+          10,
+          9,
+          17,
+          2
+        ],
+        [
+          10,
+          4,
+          5,
+          5,
+          8,
+          13,
+          0
+        ],
+        [
+          10,
+          12,
+          37,
+          32,
+          19,
+          27,
+          0
+        ],
+        [
+          6,
+          9,
+          7,
+          32,
+          17,
+          24,
+          1
+        ],
+        [
+          13,
+          14,
+          1,
+          19,
+          28,
+          8,
+          2
+        ],
+        [
+          12,
+          0,
+          4,
+          10,
+          7,
+          24,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_gated_cross_attn__split_C__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.2982456140350877,
+    "sedih": 0.0898876404494382,
+    "marah": 0.4291845493562232,
+    "takut": 0.32599118942731276,
+    "netral": 0.3557692307692308,
+    "terkejut": 0.2608695652173913,
+    "jijik": 0.0
+  },
+  "best_seed_confusion_matrix": [
+    [
+      17,
+      4,
+      12,
+      17,
+      16,
+      5,
+      1
+    ],
+    [
+      2,
+      4,
+      9,
+      14,
+      9,
+      7,
+      0
+    ],
+    [
+      2,
+      16,
+      50,
+      20,
+      33,
+      16,
+      0
+    ],
+    [
+      4,
+      10,
+      11,
+      37,
+      23,
+      11,
+      0
+    ],
+    [
+      9,
+      9,
+      2,
+      24,
+      37,
+      3,
+      1
+    ],
+    [
+      7,
+      1,
+      11,
+      19,
+      5,
+      15,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\maksimal_gated_cross_attn__split_C.csv"
+}

@@ -1,0 +1,92 @@
+{
+  "model_key": "visual_videomaev2_base",
+  "tier": "maksimal",
+  "modality": "visual",
+  "split": "split_B",
+  "seed": 42,
+  "val_macro_f1": 0.1906,
+  "test_macro_f1": 0.1639,
+  "test_accuracy": 0.222,
+  "per_class_f1": {
+    "senang": 0.3805970149253731,
+    "sedih": 0.14012738853503184,
+    "marah": 0.16176470588235295,
+    "takut": 0.09523809523809523,
+    "netral": 0.275,
+    "terkejut": 0.09433962264150944,
+    "jijik": 0.0
+  },
+  "confusion_matrix": [
+    [
+      51,
+      10,
+      13,
+      18,
+      21,
+      10,
+      0
+    ],
+    [
+      14,
+      11,
+      20,
+      24,
+      40,
+      14,
+      0
+    ],
+    [
+      22,
+      2,
+      11,
+      8,
+      18,
+      9,
+      0
+    ],
+    [
+      15,
+      3,
+      5,
+      6,
+      11,
+      0,
+      0
+    ],
+    [
+      23,
+      1,
+      13,
+      12,
+      33,
+      4,
+      0
+    ],
+    [
+      14,
+      5,
+      4,
+      10,
+      26,
+      5,
+      0
+    ],
+    [
+      6,
+      2,
+      0,
+      8,
+      5,
+      0,
+      0
+    ]
+  ],
+  "vram_plan": {
+    "micro_bs": 4,
+    "grad_accum": 4,
+    "peak_allocated_gb": 0.063,
+    "peak_reserved_gb": 0.107
+  },
+  "cache_path": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\cache\\finetuned\\split_B\\visual_videomaev2_base.pt",
+  "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\visual_videomaev2_base__split_B__seed42.csv"
+}

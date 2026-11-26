@@ -1,0 +1,348 @@
+{
+  "name": "hemat_ablation_late__audio+visual",
+  "split": "split_A",
+  "best_params": {
+    "lr": 0.00011600433752378417,
+    "proj_dim": 512,
+    "num_layers": 2,
+    "num_heads": 4,
+    "dropout": 0.20165663513708074,
+    "weight_decay": 0.004274869455295219,
+    "batch_size": 32,
+    "loss_fn": "weighted_ce",
+    "modality_dropout": 0.02896726488128243
+  },
+  "macro_f1_mean": 0.4138,
+  "macro_f1_std": 0.0224,
+  "accuracy_mean": 0.4624,
+  "accuracy_std": 0.0215,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.4217,
+      "test_macro_f1": 0.4011,
+      "test_accuracy": 0.4375,
+      "per_class_f1": {
+        "senang": 0.5604395604395604,
+        "sedih": 0.45454545454545453,
+        "marah": 0.4383561643835616,
+        "takut": 0.5095541401273885,
+        "netral": 0.4431818181818182,
+        "terkejut": 0.23529411764705882,
+        "jijik": 0.16666666666666666
+      },
+      "confusion_matrix": [
+        [
+          51,
+          6,
+          5,
+          3,
+          12,
+          8,
+          5
+        ],
+        [
+          4,
+          35,
+          3,
+          8,
+          6,
+          14,
+          2
+        ],
+        [
+          8,
+          10,
+          32,
+          7,
+          6,
+          21,
+          1
+        ],
+        [
+          4,
+          10,
+          6,
+          40,
+          9,
+          17,
+          1
+        ],
+        [
+          15,
+          11,
+          9,
+          4,
+          39,
+          12,
+          0
+        ],
+        [
+          9,
+          8,
+          5,
+          7,
+          12,
+          18,
+          1
+        ],
+        [
+          1,
+          2,
+          1,
+          1,
+          2,
+          3,
+          2
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__audio+visual__split_A__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.4244,
+      "test_macro_f1": 0.3949,
+      "test_accuracy": 0.4597,
+      "per_class_f1": {
+        "senang": 0.5529411764705883,
+        "sedih": 0.37209302325581395,
+        "marah": 0.4945054945054945,
+        "takut": 0.5301204819277109,
+        "netral": 0.4810126582278481,
+        "terkejut": 0.2222222222222222,
+        "jijik": 0.1111111111111111
+      },
+      "confusion_matrix": [
+        [
+          47,
+          5,
+          8,
+          2,
+          26,
+          1,
+          1
+        ],
+        [
+          5,
+          24,
+          4,
+          15,
+          19,
+          3,
+          2
+        ],
+        [
+          6,
+          7,
+          45,
+          5,
+          15,
+          6,
+          1
+        ],
+        [
+          3,
+          3,
+          17,
+          44,
+          13,
+          7,
+          0
+        ],
+        [
+          12,
+          7,
+          11,
+          2,
+          57,
+          1,
+          0
+        ],
+        [
+          5,
+          10,
+          11,
+          9,
+          14,
+          10,
+          1
+        ],
+        [
+          2,
+          1,
+          1,
+          2,
+          3,
+          2,
+          1
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__audio+visual__split_A__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.4191,
+      "test_macro_f1": 0.4453,
+      "test_accuracy": 0.4899,
+      "per_class_f1": {
+        "senang": 0.591715976331361,
+        "sedih": 0.4647887323943662,
+        "marah": 0.5303867403314917,
+        "takut": 0.5082872928176796,
+        "netral": 0.5,
+        "terkejut": 0.27184466019417475,
+        "jijik": 0.25
+      },
+      "confusion_matrix": [
+        [
+          50,
+          7,
+          10,
+          5,
+          15,
+          3,
+          0
+        ],
+        [
+          3,
+          33,
+          5,
+          15,
+          10,
+          6,
+          0
+        ],
+        [
+          3,
+          8,
+          48,
+          9,
+          9,
+          7,
+          1
+        ],
+        [
+          3,
+          4,
+          15,
+          46,
+          13,
+          6,
+          0
+        ],
+        [
+          15,
+          6,
+          9,
+          6,
+          50,
+          4,
+          0
+        ],
+        [
+          5,
+          10,
+          9,
+          10,
+          11,
+          14,
+          1
+        ],
+        [
+          0,
+          2,
+          0,
+          3,
+          2,
+          3,
+          2
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hemat_ablation_late__audio+visual__split_A__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.591715976331361,
+    "sedih": 0.4647887323943662,
+    "marah": 0.5303867403314917,
+    "takut": 0.5082872928176796,
+    "netral": 0.5,
+    "terkejut": 0.27184466019417475,
+    "jijik": 0.25
+  },
+  "best_seed_confusion_matrix": [
+    [
+      50,
+      7,
+      10,
+      5,
+      15,
+      3,
+      0
+    ],
+    [
+      3,
+      33,
+      5,
+      15,
+      10,
+      6,
+      0
+    ],
+    [
+      3,
+      8,
+      48,
+      9,
+      9,
+      7,
+      1
+    ],
+    [
+      3,
+      4,
+      15,
+      46,
+      13,
+      6,
+      0
+    ],
+    [
+      15,
+      6,
+      9,
+      6,
+      50,
+      4,
+      0
+    ],
+    [
+      5,
+      10,
+      9,
+      10,
+      11,
+      14,
+      1
+    ],
+    [
+      0,
+      2,
+      0,
+      3,
+      2,
+      3,
+      2
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\hemat_ablation_late__audio+visual__split_A.csv"
+}

@@ -1,0 +1,202 @@
+[2026-11-26 04:01:58] MULAI: Frozen Extract text_roberta_base
+[2026-11-26 04:02:09] SELESAI (0.2 mnt): Frozen Extract text_roberta_base
+[2026-11-26 04:02:24] MULAI: Frozen Extract text_deberta_base
+[2026-11-26 04:03:07] SELESAI (0.7 mnt): Frozen Extract text_deberta_base
+[2026-11-26 04:03:22] MULAI: Frozen Extract text_distilroberta_emo
+[2026-11-26 04:04:03] SELESAI (0.7 mnt): Frozen Extract text_distilroberta_emo
+[2026-11-26 04:04:18] MULAI: Frozen Extract audio_wav2vec2_base
+[2026-11-26 04:05:23] SELESAI (1.1 mnt): Frozen Extract audio_wav2vec2_base
+[2026-11-26 04:05:39] MULAI: Frozen Extract audio_wavlm_base
+[2026-11-26 04:07:16] SELESAI (1.6 mnt): Frozen Extract audio_wavlm_base
+[2026-11-26 04:07:31] MULAI: Frozen Extract visual_resnet50
+[2026-11-26 04:11:52] SELESAI (4.3 mnt): Frozen Extract visual_resnet50
+[2026-11-26 04:12:07] MULAI: Frozen Extract visual_emotieff_b0
+[2026-11-26 04:16:56] SELESAI (4.8 mnt): Frozen Extract visual_emotieff_b0
+[2026-11-26 04:17:12] MULAI: Frozen Extract visual_vit_base
+[2026-11-26 04:21:17] SELESAI (4.1 mnt): Frozen Extract visual_vit_base
+[2026-11-26 04:21:33] MULAI: Frozen Extract audio_emotion2vec_large
+[2026-11-26 04:24:21] SELESAI (2.8 mnt): Frozen Extract audio_emotion2vec_large
+[2026-11-26 04:24:36] MULAI: Frozen Extract visual_emotieff_b2
+[2026-11-26 04:28:50] SELESAI (4.2 mnt): Frozen Extract visual_emotieff_b2
+[2026-11-26 04:29:06] SELESAI ekstraksi beku (10 model). Siap lanjut training begitu splits.csv ada.
+[2026-11-26 04:40:23] PLAN START (all/priority): ETA awal W1=~59 mnt | ETA awal W2=~4j 45m | Total=~5j 45m
+[2026-11-26 04:40:23] MULAI: W1 Extract text_roberta_base
+[2026-11-26 04:40:23] [W1 1/44 (2%)] SELESAI (0.0 mnt): W1 Extract text_roberta_base | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:24] MULAI: W1 Extract text_deberta_base
+[2026-11-26 04:40:24] [W1 2/44 (4%)] SELESAI (0.0 mnt): W1 Extract text_deberta_base | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:24] MULAI: W1 Extract text_distilroberta_emo
+[2026-11-26 04:40:24] [W1 3/44 (6%)] SELESAI (0.0 mnt): W1 Extract text_distilroberta_emo | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:24] MULAI: W1 Extract audio_wav2vec2_base
+[2026-11-26 04:40:25] [W1 4/44 (9%)] SELESAI (0.0 mnt): W1 Extract audio_wav2vec2_base | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:25] MULAI: W1 Extract audio_wavlm_base
+[2026-11-26 04:40:26] [W1 5/44 (11%)] SELESAI (0.0 mnt): W1 Extract audio_wavlm_base | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:26] MULAI: W1 Extract visual_resnet50
+[2026-11-26 04:40:26] [W1 6/44 (13%)] SELESAI (0.0 mnt): W1 Extract visual_resnet50 | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:26] MULAI: W1 Extract visual_emotieff_b0
+[2026-11-26 04:40:26] [W1 7/44 (15%)] SELESAI (0.0 mnt): W1 Extract visual_emotieff_b0 | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:27] MULAI: W1 Extract visual_vit_base
+[2026-11-26 04:40:27] [W1 8/44 (18%)] SELESAI (0.0 mnt): W1 Extract visual_vit_base | ETA W1: ~59 mnt | ETA Total: ~5j 44m
+[2026-11-26 04:40:27] MULAI: W1 Train audio_crnn (split_A)
+[2026-11-26 04:49:37] [W1 9/44 (20%)] SELESAI (9.2 mnt): W1 Train audio_crnn (split_A) | ETA W1: ~2j 20m | ETA Total: ~7j 05m
+[2026-11-26 04:49:37] MULAI: W1 Unimodal text_roberta_base (split_A)
+[2026-11-26 04:53:39] [W1 10/44 (22%)] SELESAI (4.0 mnt): W1 Unimodal text_roberta_base (split_A) | ETA W1: ~2j 17m | ETA Total: ~7j 02m
+[2026-11-26 04:53:40] MULAI: W1 Unimodal text_deberta_base (split_A)
+[2026-11-26 05:00:02] [W1 11/44 (25%)] SELESAI (6.4 mnt): W1 Unimodal text_deberta_base (split_A) | ETA W1: ~2j 14m | ETA Total: ~6j 59m
+[2026-11-26 05:00:02] MULAI: W1 Unimodal text_distilroberta_emo (split_A)
+[2026-11-26 05:04:12] [W1 12/44 (27%)] SELESAI (4.2 mnt): W1 Unimodal text_distilroberta_emo (split_A) | ETA W1: ~2j 11m | ETA Total: ~6j 56m
+[2026-11-26 05:04:12] MULAI: W1 Unimodal audio_wav2vec2_base (split_A)
+[2026-11-26 05:12:02] [W1 13/44 (29%)] SELESAI (7.8 mnt): W1 Unimodal audio_wav2vec2_base (split_A) | ETA W1: ~2j 08m | ETA Total: ~6j 53m
+[2026-11-26 05:12:03] MULAI: W1 Unimodal audio_wavlm_base (split_A)
+[2026-11-26 05:18:23] [W1 14/44 (31%)] SELESAI (6.3 mnt): W1 Unimodal audio_wavlm_base (split_A) | ETA W1: ~2j 05m | ETA Total: ~6j 50m
+[2026-11-26 05:18:23] MULAI: W1 Unimodal visual_resnet50 (split_A)
+[2026-11-26 05:24:10] [W1 15/44 (34%)] SELESAI (5.8 mnt): W1 Unimodal visual_resnet50 (split_A) | ETA W1: ~2j 02m | ETA Total: ~6j 47m
+[2026-11-26 05:24:10] MULAI: W1 Unimodal visual_emotieff_b0 (split_A)
+[2026-11-26 05:30:30] [W1 16/44 (36%)] SELESAI (6.3 mnt): W1 Unimodal visual_emotieff_b0 (split_A) | ETA W1: ~1j 59m | ETA Total: ~6j 44m
+[2026-11-26 05:30:30] MULAI: W1 Unimodal visual_vit_base (split_A)
+[2026-11-26 05:38:20] [W1 17/44 (38%)] SELESAI (7.8 mnt): W1 Unimodal visual_vit_base (split_A) | ETA W1: ~1j 56m | ETA Total: ~6j 41m
+[2026-11-26 05:38:20] MULAI: W1 Fusion early (split_A)
+[2026-11-26 05:49:26] [W1 18/44 (40%)] SELESAI (11.1 mnt): W1 Fusion early (split_A) | ETA W1: ~1j 53m | ETA Total: ~6j 38m
+[2026-11-26 05:49:26] MULAI: W1 Fusion late (split_A)
+[2026-11-26 06:02:41] [W1 19/44 (43%)] SELESAI (13.3 mnt): W1 Fusion late (split_A) | ETA W1: ~1j 50m | ETA Total: ~6j 35m
+[2026-11-26 06:02:41] MULAI: W1 Ablation 7-kombinasi late (split_A)
+[2026-11-26 06:39:30] [W1 20/44 (45%)] SELESAI (36.8 mnt): W1 Ablation 7-kombinasi late (split_A) | ETA W1: ~1j 37m | ETA Total: ~6j 23m
+[2026-11-26 06:39:31] MULAI: W1 Train audio_crnn (split_B)
+[2026-11-26 06:46:32] [W1 21/44 (47%)] SELESAI (7.0 mnt): W1 Train audio_crnn (split_B) | ETA W1: ~1j 31m | ETA Total: ~6j 16m
+[2026-11-26 06:46:32] MULAI: W1 Unimodal text_roberta_base (split_B)
+[2026-11-26 06:50:34] [W1 22/44 (50%)] SELESAI (4.0 mnt): W1 Unimodal text_roberta_base (split_B) | ETA W1: ~1j 28m | ETA Total: ~6j 13m
+[2026-11-26 06:50:34] MULAI: W1 Unimodal text_deberta_base (split_B)
+[2026-11-26 06:54:18] [W1 23/44 (52%)] SELESAI (3.7 mnt): W1 Unimodal text_deberta_base (split_B) | ETA W1: ~1j 25m | ETA Total: ~6j 10m
+[2026-11-26 06:54:18] MULAI: W1 Unimodal text_distilroberta_emo (split_B)
+[2026-11-26 06:57:24] [W1 24/44 (54%)] SELESAI (3.1 mnt): W1 Unimodal text_distilroberta_emo (split_B) | ETA W1: ~1j 22m | ETA Total: ~6j 07m
+[2026-11-26 06:57:24] MULAI: W1 Unimodal audio_wav2vec2_base (split_B)
+[2026-11-26 07:06:29] [W1 25/44 (56%)] SELESAI (9.1 mnt): W1 Unimodal audio_wav2vec2_base (split_B) | ETA W1: ~1j 19m | ETA Total: ~6j 04m
+[2026-11-26 07:06:29] MULAI: W1 Unimodal audio_wavlm_base (split_B)
+[2026-11-26 07:13:13] [W1 26/44 (59%)] SELESAI (6.7 mnt): W1 Unimodal audio_wavlm_base (split_B) | ETA W1: ~1j 16m | ETA Total: ~6j 01m
+[2026-11-26 07:13:13] MULAI: W1 Unimodal visual_resnet50 (split_B)
+[2026-11-26 07:17:03] [W1 27/44 (61%)] SELESAI (3.8 mnt): W1 Unimodal visual_resnet50 (split_B) | ETA W1: ~1j 13m | ETA Total: ~5j 58m
+[2026-11-26 07:17:03] MULAI: W1 Unimodal visual_emotieff_b0 (split_B)
+[2026-11-26 07:20:19] [W1 28/44 (63%)] SELESAI (3.3 mnt): W1 Unimodal visual_emotieff_b0 (split_B) | ETA W1: ~1j 10m | ETA Total: ~5j 55m
+[2026-11-26 07:20:19] MULAI: W1 Unimodal visual_vit_base (split_B)
+[2026-11-26 07:24:04] [W1 29/44 (65%)] SELESAI (3.7 mnt): W1 Unimodal visual_vit_base (split_B) | ETA W1: ~1j 07m | ETA Total: ~5j 52m
+[2026-11-26 07:24:04] MULAI: W1 Fusion early (split_B)
+[2026-11-26 07:31:33] [W1 30/44 (68%)] SELESAI (7.5 mnt): W1 Fusion early (split_B) | ETA W1: ~1j 04m | ETA Total: ~5j 49m
+[2026-11-26 07:31:33] MULAI: W1 Fusion late (split_B)
+[2026-11-26 07:40:32] [W1 31/44 (70%)] SELESAI (9.0 mnt): W1 Fusion late (split_B) | ETA W1: ~1j 01m | ETA Total: ~5j 46m
+[2026-11-26 07:40:32] MULAI: W1 Ablation 7-kombinasi late (split_B)
+[2026-11-26 08:06:39] [W1 32/44 (72%)] SELESAI (26.1 mnt): W1 Ablation 7-kombinasi late (split_B) | ETA W1: ~49 mnt | ETA Total: ~5j 34m
+[2026-11-26 08:06:39] MULAI: W1 Train audio_crnn (split_C)
+[2026-11-26 08:13:19] [W1 33/44 (75%)] SELESAI (6.7 mnt): W1 Train audio_crnn (split_C) | ETA W1: ~42 mnt | ETA Total: ~5j 28m
+[2026-11-26 08:13:19] MULAI: W1 Unimodal text_roberta_base (split_C)
+[2026-11-26 08:17:10] [W1 34/44 (77%)] SELESAI (3.9 mnt): W1 Unimodal text_roberta_base (split_C) | ETA W1: ~40 mnt | ETA Total: ~5j 25m
+[2026-11-26 08:17:11] MULAI: W1 Unimodal text_deberta_base (split_C)
+[2026-11-26 08:21:13] [W1 35/44 (79%)] SELESAI (4.0 mnt): W1 Unimodal text_deberta_base (split_C) | ETA W1: ~36 mnt | ETA Total: ~5j 22m
+[2026-11-26 08:21:13] MULAI: W1 Unimodal text_distilroberta_emo (split_C)
+[2026-11-26 08:24:53] [W1 36/44 (81%)] SELESAI (3.7 mnt): W1 Unimodal text_distilroberta_emo (split_C) | ETA W1: ~34 mnt | ETA Total: ~5j 19m
+[2026-11-26 08:24:54] MULAI: W1 Unimodal audio_wav2vec2_base (split_C)
+[2026-11-26 08:33:10] [W1 37/44 (84%)] SELESAI (8.3 mnt): W1 Unimodal audio_wav2vec2_base (split_C) | ETA W1: ~30 mnt | ETA Total: ~5j 16m
+[2026-11-26 08:33:10] MULAI: W1 Unimodal audio_wavlm_base (split_C)
+[2026-11-26 08:39:34] [W1 38/44 (86%)] SELESAI (6.4 mnt): W1 Unimodal audio_wavlm_base (split_C) | ETA W1: ~28 mnt | ETA Total: ~5j 13m
+[2026-11-26 08:39:34] MULAI: W1 Unimodal visual_resnet50 (split_C)
+[2026-11-26 08:46:48] [W1 39/44 (88%)] SELESAI (7.2 mnt): W1 Unimodal visual_resnet50 (split_C) | ETA W1: ~24 mnt | ETA Total: ~5j 10m
+[2026-11-26 08:46:48] MULAI: W1 Unimodal visual_emotieff_b0 (split_C)
+[2026-11-26 08:52:21] [W1 40/44 (90%)] SELESAI (5.5 mnt): W1 Unimodal visual_emotieff_b0 (split_C) | ETA W1: ~22 mnt | ETA Total: ~5j 07m
+[2026-11-26 08:52:22] MULAI: W1 Unimodal visual_vit_base (split_C)
+[2026-11-26 08:56:42] [W1 41/44 (93%)] SELESAI (4.3 mnt): W1 Unimodal visual_vit_base (split_C) | ETA W1: ~18 mnt | ETA Total: ~5j 04m
+[2026-11-26 08:56:43] MULAI: W1 Fusion early (split_C)
+[2026-11-26 09:04:32] [W1 42/44 (95%)] SELESAI (7.8 mnt): W1 Fusion early (split_C) | ETA W1: ~16 mnt | ETA Total: ~5j 01m
+[2026-11-26 09:04:33] MULAI: W1 Fusion late (split_C)
+[2026-11-26 09:14:30] [W1 43/44 (97%)] SELESAI (10.0 mnt): W1 Fusion late (split_C) | ETA W1: ~12 mnt | ETA Total: ~4j 58m
+[2026-11-26 09:14:30] MULAI: W1 Ablation 7-kombinasi late (split_C)
+[2026-11-26 09:46:11] [W1 44/44 (100%)] SELESAI (31.7 mnt): W1 Ablation 7-kombinasi late (split_C) | ETA W1: ~0 mnt | ETA Total: ~4j 45m
+[2026-11-26 09:46:12] MULAI: Ringkas Sementara Pasca Gelombang 1
+[2026-11-26 09:46:14] SELESAI (0.0 mnt): Ringkas Sementara Pasca Gelombang 1
+[2026-11-26 09:47:14] MULAI: W2 Extract audio_emotion2vec_large
+[2026-11-26 09:47:15] [W2 1/44 (2%)] SELESAI (0.0 mnt): W2 Extract audio_emotion2vec_large | ETA W2: ~4j 45m | ETA Total: ~4j 45m
+[2026-11-26 09:47:15] MULAI: W2 Extract visual_emotieff_b2
+[2026-11-26 09:47:15] [W2 2/44 (4%)] SELESAI (0.0 mnt): W2 Extract visual_emotieff_b2 | ETA W2: ~4j 45m | ETA Total: ~4j 45m
+[2026-11-26 09:47:15] MULAI: W2 Fine-tune text_deberta_large (split_A)
+[2026-11-26 09:58:03] [W2 3/44 (6%)] SELESAI (10.8 mnt): W2 Fine-tune text_deberta_large (split_A) | ETA W2: ~6j 57m | ETA Total: ~6j 57m
+[2026-11-26 09:59:03] MULAI: W2 Fine-tune text_deberta_large (split_B)
+[2026-11-26 10:08:50] [W2 4/44 (9%)] SELESAI (9.8 mnt): W2 Fine-tune text_deberta_large (split_B) | ETA W2: ~6j 33m | ETA Total: ~6j 33m
+[2026-11-26 10:09:50] MULAI: W2 Fine-tune text_deberta_large (split_C)
+[2026-11-26 10:19:46] [W2 5/44 (11%)] SELESAI (9.9 mnt): W2 Fine-tune text_deberta_large (split_C) | ETA W2: ~6j 20m | ETA Total: ~6j 20m
+[2026-11-26 10:20:46] MULAI: W2 Fine-tune text_modernbert_large (split_A)
+[2026-11-26 10:30:43] [W2 6/44 (13%)] SELESAI (9.9 mnt): W2 Fine-tune text_modernbert_large (split_A) | ETA W2: ~6j 09m | ETA Total: ~6j 09m
+[2026-11-26 10:31:43] MULAI: W2 Fine-tune text_modernbert_large (split_B)
+[2026-11-26 10:39:55] [W2 7/44 (15%)] SELESAI (8.2 mnt): W2 Fine-tune text_modernbert_large (split_B) | ETA W2: ~5j 46m | ETA Total: ~5j 46m
+[2026-11-26 10:40:56] MULAI: W2 Fine-tune text_modernbert_large (split_C)
+[2026-11-26 10:49:21] [W2 8/44 (18%)] SELESAI (8.4 mnt): W2 Fine-tune text_modernbert_large (split_C) | ETA W2: ~5j 29m | ETA Total: ~5j 29m
+[2026-11-26 10:50:21] MULAI: W2 Fine-tune audio_wavlm_large (split_A)
+[2026-11-26 12:07:47] [W2 9/44 (20%)] SELESAI (77.4 mnt): W2 Fine-tune audio_wavlm_large (split_A) | ETA W2: ~9j 08m | ETA Total: ~9j 08m
+[2026-11-26 12:08:47] MULAI: W2 Fine-tune audio_wavlm_large (split_B)
+[2026-11-26 13:22:40] [W2 10/44 (22%)] SELESAI (73.9 mnt): W2 Fine-tune audio_wavlm_large (split_B) | ETA W2: ~8j 57m | ETA Total: ~8j 57m
+[2026-11-26 13:23:41] MULAI: W2 Fine-tune audio_wavlm_large (split_C)
+[2026-11-26 14:39:19] [W2 11/44 (25%)] SELESAI (75.6 mnt): W2 Fine-tune audio_wavlm_large (split_C) | ETA W2: ~8j 22m | ETA Total: ~8j 22m
+[2026-11-26 14:40:19] MULAI: W2 Fine-tune audio_wav2vec2_msp (split_A)
+[2026-11-26 14:55:25] [W2 12/44 (27%)] SELESAI (15.1 mnt): W2 Fine-tune audio_wav2vec2_msp (split_A) | ETA W2: ~7j 47m | ETA Total: ~7j 47m
+[2026-11-26 14:56:26] MULAI: W2 Fine-tune audio_wav2vec2_msp (split_B)
+[2026-11-26 15:16:18] [W2 13/44 (29%)] SELESAI (19.9 mnt): W2 Fine-tune audio_wav2vec2_msp (split_B) | ETA W2: ~7j 12m | ETA Total: ~7j 12m
+[2026-11-26 15:17:18] MULAI: W2 Fine-tune audio_wav2vec2_msp (split_C)
+[2026-11-26 15:43:34] [W2 14/44 (31%)] SELESAI (26.3 mnt): W2 Fine-tune audio_wav2vec2_msp (split_C) | ETA W2: ~6j 37m | ETA Total: ~6j 37m
+[2026-11-26 15:44:34] MULAI: W2 Fine-tune visual_convnext_base (split_A)
+[2026-11-26 16:26:40] [W2 15/44 (34%)] SELESAI (42.1 mnt): W2 Fine-tune visual_convnext_base (split_A) | ETA W2: ~5j 50m | ETA Total: ~5j 50m
+[2026-11-26 16:27:41] MULAI: W2 Fine-tune visual_convnext_base (split_B)
+[2026-11-26 17:04:06] [W2 16/44 (36%)] SELESAI (36.4 mnt): W2 Fine-tune visual_convnext_base (split_B) | ETA W2: ~5j 02m | ETA Total: ~5j 02m
+[2026-11-26 17:05:07] MULAI: W2 Fine-tune visual_convnext_base (split_C)
+[2026-11-26 17:42:10] [W2 17/44 (38%)] SELESAI (37.1 mnt): W2 Fine-tune visual_convnext_base (split_C) | ETA W2: ~4j 15m | ETA Total: ~4j 15m
+[2026-11-26 17:43:11] MULAI: W2 Fine-tune visual_videomaev2_base (split_A)
+[2026-11-26 18:19:41] [W2 18/44 (40%)] SELESAI (36.5 mnt): W2 Fine-tune visual_videomaev2_base (split_A) | ETA W2: ~3j 24m | ETA Total: ~3j 24m
+[2026-11-26 18:20:41] MULAI: W2 Fine-tune visual_videomaev2_base (split_B)
+[2026-11-26 18:55:37] [W2 19/44 (43%)] SELESAI (34.9 mnt): W2 Fine-tune visual_videomaev2_base (split_B) | ETA W2: ~2j 34m | ETA Total: ~2j 34m
+[2026-11-26 18:56:37] MULAI: W2 Fine-tune visual_videomaev2_base (split_C)
+[2026-11-26 19:32:35] [W2 20/44 (45%)] SELESAI (36.0 mnt): W2 Fine-tune visual_videomaev2_base (split_C) | ETA W2: ~1j 46m | ETA Total: ~1j 46m
+[2026-11-26 19:33:35] MULAI: W2 Probe audio_emotion2vec_large (split_A)
+[2026-11-26 19:40:20] [W2 21/44 (47%)] SELESAI (6.8 mnt): W2 Probe audio_emotion2vec_large (split_A) | ETA W2: ~1j 44m | ETA Total: ~1j 44m
+[2026-11-26 19:40:20] MULAI: W2 Probe visual_emotieff_b2 (split_A)
+[2026-11-26 19:48:32] [W2 22/44 (50%)] SELESAI (8.2 mnt): W2 Probe visual_emotieff_b2 (split_A) | ETA W2: ~1j 42m | ETA Total: ~1j 42m
+[2026-11-26 19:48:32] MULAI: W2 Fusion early (split_A)
+[2026-11-26 19:57:09] [W2 23/44 (52%)] SELESAI (8.6 mnt): W2 Fusion early (split_A) | ETA W2: ~1j 39m | ETA Total: ~1j 39m
+[2026-11-26 19:57:09] MULAI: W2 Fusion late (split_A)
+[2026-11-26 20:09:30] [W2 24/44 (54%)] SELESAI (12.3 mnt): W2 Fusion late (split_A) | ETA W2: ~1j 37m | ETA Total: ~1j 37m
+[2026-11-26 20:09:30] MULAI: W2 Fusion gated_cross_attn (split_A)
+[2026-11-26 20:23:35] [W2 25/44 (56%)] SELESAI (14.1 mnt): W2 Fusion gated_cross_attn (split_A) | ETA W2: ~1j 34m | ETA Total: ~1j 34m
+[2026-11-26 20:23:35] MULAI: W2 Fusion mult (split_A)
+[2026-11-26 20:35:35] [W2 26/44 (59%)] SELESAI (12.0 mnt): W2 Fusion mult (split_A) | ETA W2: ~1j 30m | ETA Total: ~1j 30m
+[2026-11-26 20:35:35] MULAI: W2 Ablation 7-kombinasi gated_cross_attn (split_A)
+[2026-11-26 21:16:29] [W2 27/44 (61%)] SELESAI (40.9 mnt): W2 Ablation 7-kombinasi gated_cross_attn (split_A) | ETA W2: ~1j 16m | ETA Total: ~1j 16m
+[2026-11-26 21:16:29] MULAI: W2 Stacking Ensemble (split_A)
+[2026-11-26 21:16:30] [W2 28/44 (63%)] SELESAI (0.0 mnt): W2 Stacking Ensemble (split_A) | ETA W2: ~1j 15m | ETA Total: ~1j 15m
+[2026-11-26 21:16:30] MULAI: W2 Probe audio_emotion2vec_large (split_B)
+[2026-11-26 21:22:48] [W2 29/44 (65%)] SELESAI (6.3 mnt): W2 Probe audio_emotion2vec_large (split_B) | ETA W2: ~1j 12m | ETA Total: ~1j 12m
+[2026-11-26 21:22:48] MULAI: W2 Probe visual_emotieff_b2 (split_B)
+[2026-11-26 21:27:38] [W2 30/44 (68%)] SELESAI (4.8 mnt): W2 Probe visual_emotieff_b2 (split_B) | ETA W2: ~1j 09m | ETA Total: ~1j 09m
+[2026-11-26 21:27:39] MULAI: W2 Fusion early (split_B)
+[2026-11-26 21:40:56] [W2 31/44 (70%)] SELESAI (13.3 mnt): W2 Fusion early (split_B) | ETA W2: ~1j 05m | ETA Total: ~1j 05m
+[2026-11-26 21:40:56] MULAI: W2 Fusion late (split_B)
+[2026-11-26 21:50:27] [W2 32/44 (72%)] SELESAI (9.5 mnt): W2 Fusion late (split_B) | ETA W2: ~1j 01m | ETA Total: ~1j 01m
+[2026-11-26 21:50:27] MULAI: W2 Fusion gated_cross_attn (split_B)
+[2026-11-26 22:00:21] [W2 33/44 (75%)] SELESAI (9.9 mnt): W2 Fusion gated_cross_attn (split_B) | ETA W2: ~57 mnt | ETA Total: ~57 mnt
+[2026-11-26 22:00:22] MULAI: W2 Fusion mult (split_B)
+[2026-11-26 22:12:14] [W2 34/44 (77%)] SELESAI (11.9 mnt): W2 Fusion mult (split_B) | ETA W2: ~53 mnt | ETA Total: ~53 mnt
+[2026-11-26 22:12:14] MULAI: W2 Ablation 7-kombinasi gated_cross_attn (split_B)
+[2026-11-26 22:41:46] [W2 35/44 (79%)] SELESAI (29.5 mnt): W2 Ablation 7-kombinasi gated_cross_attn (split_B) | ETA W2: ~38 mnt | ETA Total: ~38 mnt
+[2026-11-26 22:41:46] MULAI: W2 Stacking Ensemble (split_B)
+[2026-11-26 22:41:46] [W2 36/44 (81%)] SELESAI (0.0 mnt): W2 Stacking Ensemble (split_B) | ETA W2: ~37 mnt | ETA Total: ~37 mnt
+[2026-11-26 22:41:47] MULAI: W2 Probe audio_emotion2vec_large (split_C)
+[2026-11-26 22:48:02] [W2 37/44 (84%)] SELESAI (6.3 mnt): W2 Probe audio_emotion2vec_large (split_C) | ETA W2: ~34 mnt | ETA Total: ~34 mnt
+[2026-11-26 22:48:02] MULAI: W2 Probe visual_emotieff_b2 (split_C)
+[2026-11-26 22:55:19] [W2 38/44 (86%)] SELESAI (7.3 mnt): W2 Probe visual_emotieff_b2 (split_C) | ETA W2: ~32 mnt | ETA Total: ~32 mnt
+[2026-11-26 22:55:19] MULAI: W2 Fusion early (split_C)
+[2026-11-26 23:03:54] [W2 39/44 (88%)] SELESAI (8.6 mnt): W2 Fusion early (split_C) | ETA W2: ~28 mnt | ETA Total: ~28 mnt
+[2026-11-26 23:03:54] MULAI: W2 Fusion late (split_C)
+[2026-11-26 23:17:25] [W2 40/44 (90%)] SELESAI (13.5 mnt): W2 Fusion late (split_C) | ETA W2: ~23 mnt | ETA Total: ~23 mnt
+[2026-11-26 23:17:25] MULAI: W2 Fusion gated_cross_attn (split_C)
+[2026-11-26 23:28:47] [W2 41/44 (93%)] SELESAI (11.4 mnt): W2 Fusion gated_cross_attn (split_C) | ETA W2: ~20 mnt | ETA Total: ~20 mnt
+[2026-11-26 23:28:47] MULAI: W2 Fusion mult (split_C)
+[2026-11-26 23:41:20] [W2 42/44 (95%)] SELESAI (12.5 mnt): W2 Fusion mult (split_C) | ETA W2: ~16 mnt | ETA Total: ~16 mnt
+[2026-11-26 23:41:20] MULAI: W2 Ablation 7-kombinasi gated_cross_attn (split_C)
+[2026-11-27 00:16:34] [W2 43/44 (97%)] SELESAI (35.2 mnt): W2 Ablation 7-kombinasi gated_cross_attn (split_C) | ETA W2: ~0 mnt | ETA Total: ~0 mnt
+[2026-11-27 00:16:34] MULAI: W2 Stacking Ensemble (split_C)
+[2026-11-27 00:16:34] [W2 44/44 (100%)] SELESAI (0.0 mnt): W2 Stacking Ensemble (split_C) | ETA W2: ~0 mnt | ETA Total: ~0 mnt
+[2026-11-27 00:16:35] MULAI: Ringkas Hasil & Grafik Bab IV
+[2026-11-27 00:16:37] SELESAI (0.0 mnt): Ringkas Hasil & Grafik Bab IV

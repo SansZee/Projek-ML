@@ -1,0 +1,348 @@
+{
+  "name": "maksimal_ablation_gated_cross_attn__text",
+  "split": "split_A",
+  "best_params": {
+    "lr": 6.0758085133366966e-05,
+    "proj_dim": 256,
+    "num_layers": 1,
+    "num_heads": 4,
+    "dropout": 0.23661147045343367,
+    "weight_decay": 0.0009780337016659412,
+    "batch_size": 32,
+    "loss_fn": "label_smooth_0.1",
+    "modality_dropout": 0.1300170052944527
+  },
+  "macro_f1_mean": 0.2539,
+  "macro_f1_std": 0.0063,
+  "accuracy_mean": 0.3004,
+  "accuracy_std": 0.0076,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.2656,
+      "test_macro_f1": 0.2522,
+      "test_accuracy": 0.2984,
+      "per_class_f1": {
+        "senang": 0.33707865168539325,
+        "sedih": 0.4,
+        "marah": 0.2928870292887029,
+        "takut": 0.10344827586206896,
+        "netral": 0.2988505747126437,
+        "terkejut": 0.3333333333333333,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          30,
+          17,
+          21,
+          2,
+          15,
+          5,
+          0
+        ],
+        [
+          7,
+          33,
+          19,
+          3,
+          9,
+          1,
+          0
+        ],
+        [
+          6,
+          19,
+          35,
+          4,
+          14,
+          7,
+          0
+        ],
+        [
+          17,
+          10,
+          31,
+          6,
+          9,
+          14,
+          0
+        ],
+        [
+          15,
+          8,
+          32,
+          7,
+          26,
+          2,
+          0
+        ],
+        [
+          9,
+          5,
+          13,
+          5,
+          10,
+          18,
+          0
+        ],
+        [
+          4,
+          1,
+          3,
+          2,
+          1,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_ablation_gated_cross_attn__text__split_A__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.2551,
+      "test_macro_f1": 0.2471,
+      "test_accuracy": 0.2923,
+      "per_class_f1": {
+        "senang": 0.32941176470588235,
+        "sedih": 0.3592814371257485,
+        "marah": 0.2125,
+        "takut": 0.14285714285714285,
+        "netral": 0.340080971659919,
+        "terkejut": 0.34545454545454546,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          28,
+          12,
+          9,
+          4,
+          31,
+          6,
+          0
+        ],
+        [
+          10,
+          30,
+          9,
+          3,
+          18,
+          2,
+          0
+        ],
+        [
+          8,
+          20,
+          17,
+          6,
+          28,
+          6,
+          0
+        ],
+        [
+          14,
+          13,
+          17,
+          9,
+          22,
+          12,
+          0
+        ],
+        [
+          13,
+          10,
+          13,
+          8,
+          42,
+          4,
+          0
+        ],
+        [
+          5,
+          8,
+          9,
+          7,
+          12,
+          19,
+          0
+        ],
+        [
+          2,
+          2,
+          1,
+          2,
+          4,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_ablation_gated_cross_attn__text__split_A__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.272,
+      "test_macro_f1": 0.2623,
+      "test_accuracy": 0.3105,
+      "per_class_f1": {
+        "senang": 0.3783783783783784,
+        "sedih": 0.3614457831325301,
+        "marah": 0.3050847457627119,
+        "takut": 0.26136363636363635,
+        "netral": 0.3076923076923077,
+        "terkejut": 0.2222222222222222,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          35,
+          19,
+          9,
+          8,
+          18,
+          1,
+          0
+        ],
+        [
+          8,
+          30,
+          12,
+          9,
+          13,
+          0,
+          0
+        ],
+        [
+          7,
+          16,
+          27,
+          13,
+          18,
+          4,
+          0
+        ],
+        [
+          14,
+          12,
+          19,
+          23,
+          14,
+          5,
+          0
+        ],
+        [
+          17,
+          10,
+          16,
+          15,
+          30,
+          2,
+          0
+        ],
+        [
+          11,
+          6,
+          8,
+          15,
+          11,
+          9,
+          0
+        ],
+        [
+          3,
+          1,
+          1,
+          6,
+          1,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_ablation_gated_cross_attn__text__split_A__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.3783783783783784,
+    "sedih": 0.3614457831325301,
+    "marah": 0.3050847457627119,
+    "takut": 0.26136363636363635,
+    "netral": 0.3076923076923077,
+    "terkejut": 0.2222222222222222,
+    "jijik": 0.0
+  },
+  "best_seed_confusion_matrix": [
+    [
+      35,
+      19,
+      9,
+      8,
+      18,
+      1,
+      0
+    ],
+    [
+      8,
+      30,
+      12,
+      9,
+      13,
+      0,
+      0
+    ],
+    [
+      7,
+      16,
+      27,
+      13,
+      18,
+      4,
+      0
+    ],
+    [
+      14,
+      12,
+      19,
+      23,
+      14,
+      5,
+      0
+    ],
+    [
+      17,
+      10,
+      16,
+      15,
+      30,
+      2,
+      0
+    ],
+    [
+      11,
+      6,
+      8,
+      15,
+      11,
+      9,
+      0
+    ],
+    [
+      3,
+      1,
+      1,
+      6,
+      1,
+      0,
+      0
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\maksimal_ablation_gated_cross_attn__text__split_A.csv"
+}

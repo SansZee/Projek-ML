@@ -1,0 +1,92 @@
+{
+  "model_key": "visual_convnext_base",
+  "tier": "maksimal",
+  "modality": "visual",
+  "split": "split_A",
+  "seed": 42,
+  "val_macro_f1": 0.4035,
+  "test_macro_f1": 0.4059,
+  "test_accuracy": 0.4637,
+  "per_class_f1": {
+    "senang": 0.5423728813559322,
+    "sedih": 0.3937007874015748,
+    "marah": 0.5257142857142857,
+    "takut": 0.5227272727272727,
+    "netral": 0.47058823529411764,
+    "terkejut": 0.2807017543859649,
+    "jijik": 0.10526315789473684
+  },
+  "confusion_matrix": [
+    [
+      48,
+      3,
+      9,
+      4,
+      19,
+      7,
+      0
+    ],
+    [
+      10,
+      25,
+      3,
+      16,
+      11,
+      5,
+      2
+    ],
+    [
+      2,
+      6,
+      46,
+      10,
+      9,
+      11,
+      1
+    ],
+    [
+      5,
+      4,
+      8,
+      46,
+      14,
+      8,
+      2
+    ],
+    [
+      15,
+      8,
+      11,
+      3,
+      48,
+      5,
+      0
+    ],
+    [
+      6,
+      8,
+      10,
+      9,
+      10,
+      16,
+      1
+    ],
+    [
+      1,
+      1,
+      3,
+      1,
+      3,
+      2,
+      1
+    ]
+  ],
+  "vram_plan": {
+    "micro_bs": 4,
+    "grad_accum": 4,
+    "peak_allocated_gb": 0.063,
+    "peak_reserved_gb": 0.111
+  },
+  "cache_path": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\cache\\finetuned\\split_A\\visual_convnext_base.pt",
+  "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\visual_convnext_base__split_A__seed42.csv"
+}

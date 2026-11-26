@@ -1,0 +1,92 @@
+{
+  "model_key": "audio_wavlm_large",
+  "tier": "maksimal",
+  "modality": "audio",
+  "split": "split_C",
+  "seed": 42,
+  "val_macro_f1": 0.2091,
+  "test_macro_f1": 0.2052,
+  "test_accuracy": 0.2869,
+  "per_class_f1": {
+    "senang": 0.10810810810810811,
+    "sedih": 0.15254237288135594,
+    "marah": 0.36199095022624433,
+    "takut": 0.23076923076923078,
+    "netral": 0.42033898305084744,
+    "terkejut": 0.16279069767441862,
+    "jijik": 0.0
+  },
+  "confusion_matrix": [
+    [
+      6,
+      17,
+      6,
+      7,
+      30,
+      6,
+      0
+    ],
+    [
+      1,
+      9,
+      7,
+      11,
+      12,
+      5,
+      0
+    ],
+    [
+      16,
+      11,
+      40,
+      14,
+      53,
+      3,
+      0
+    ],
+    [
+      5,
+      19,
+      13,
+      18,
+      36,
+      5,
+      0
+    ],
+    [
+      2,
+      8,
+      8,
+      3,
+      62,
+      2,
+      0
+    ],
+    [
+      9,
+      9,
+      9,
+      7,
+      16,
+      7,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0
+    ]
+  ],
+  "vram_plan": {
+    "micro_bs": 4,
+    "grad_accum": 4,
+    "peak_allocated_gb": 0.068,
+    "peak_reserved_gb": 0.252
+  },
+  "cache_path": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\cache\\finetuned\\split_C\\audio_wavlm_large.pt",
+  "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\audio_wavlm_large__split_C__seed42.csv"
+}

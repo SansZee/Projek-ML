@@ -1,0 +1,348 @@
+{
+  "name": "maksimal_early",
+  "split": "split_A",
+  "best_params": {
+    "lr": 0.00025719142025384657,
+    "proj_dim": 256,
+    "num_layers": 1,
+    "num_heads": 8,
+    "dropout": 0.22654775061557586,
+    "weight_decay": 0.0002465844721448739,
+    "batch_size": 32,
+    "loss_fn": "focal_gamma_2",
+    "modality_dropout": 0.08918833167339732
+  },
+  "macro_f1_mean": 0.3551,
+  "macro_f1_std": 0.0051,
+  "accuracy_mean": 0.3952,
+  "accuracy_std": 0.0085,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.3496,
+      "test_macro_f1": 0.3556,
+      "test_accuracy": 0.4012,
+      "per_class_f1": {
+        "senang": 0.4222222222222222,
+        "sedih": 0.45161290322580644,
+        "marah": 0.4631578947368421,
+        "takut": 0.4482758620689655,
+        "netral": 0.3262411347517731,
+        "terkejut": 0.3089430894308943,
+        "jijik": 0.06896551724137931
+      },
+      "confusion_matrix": [
+        [
+          38,
+          13,
+          15,
+          4,
+          8,
+          10,
+          2
+        ],
+        [
+          5,
+          35,
+          9,
+          12,
+          7,
+          2,
+          2
+        ],
+        [
+          6,
+          10,
+          44,
+          10,
+          4,
+          9,
+          2
+        ],
+        [
+          14,
+          6,
+          10,
+          39,
+          2,
+          11,
+          5
+        ],
+        [
+          14,
+          11,
+          15,
+          15,
+          23,
+          10,
+          2
+        ],
+        [
+          9,
+          6,
+          12,
+          6,
+          5,
+          19,
+          3
+        ],
+        [
+          4,
+          2,
+          0,
+          1,
+          2,
+          2,
+          1
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_early__split_A__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.3442,
+      "test_macro_f1": 0.3487,
+      "test_accuracy": 0.3831,
+      "per_class_f1": {
+        "senang": 0.49696969696969695,
+        "sedih": 0.41333333333333333,
+        "marah": 0.3357664233576642,
+        "takut": 0.3778801843317972,
+        "netral": 0.37349397590361444,
+        "terkejut": 0.30985915492957744,
+        "jijik": 0.13333333333333333
+      },
+      "confusion_matrix": [
+        [
+          41,
+          9,
+          4,
+          12,
+          15,
+          9,
+          0
+        ],
+        [
+          8,
+          31,
+          3,
+          14,
+          6,
+          10,
+          0
+        ],
+        [
+          5,
+          11,
+          23,
+          22,
+          9,
+          15,
+          0
+        ],
+        [
+          8,
+          9,
+          6,
+          41,
+          6,
+          15,
+          2
+        ],
+        [
+          9,
+          6,
+          8,
+          26,
+          31,
+          10,
+          0
+        ],
+        [
+          4,
+          8,
+          8,
+          13,
+          5,
+          22,
+          0
+        ],
+        [
+          0,
+          4,
+          0,
+          2,
+          4,
+          1,
+          1
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_early__split_A__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.3386,
+      "test_macro_f1": 0.3611,
+      "test_accuracy": 0.4012,
+      "per_class_f1": {
+        "senang": 0.4720496894409938,
+        "sedih": 0.41134751773049644,
+        "marah": 0.3939393939393939,
+        "takut": 0.411214953271028,
+        "netral": 0.41530054644808745,
+        "terkejut": 0.32857142857142857,
+        "jijik": 0.09523809523809523
+      },
+      "confusion_matrix": [
+        [
+          38,
+          4,
+          7,
+          9,
+          18,
+          13,
+          1
+        ],
+        [
+          3,
+          29,
+          2,
+          20,
+          9,
+          8,
+          1
+        ],
+        [
+          5,
+          11,
+          26,
+          18,
+          12,
+          11,
+          2
+        ],
+        [
+          10,
+          7,
+          3,
+          44,
+          7,
+          14,
+          2
+        ],
+        [
+          10,
+          7,
+          2,
+          25,
+          38,
+          8,
+          0
+        ],
+        [
+          4,
+          9,
+          7,
+          10,
+          5,
+          23,
+          2
+        ],
+        [
+          1,
+          2,
+          0,
+          1,
+          4,
+          3,
+          1
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\maksimal_early__split_A__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.4720496894409938,
+    "sedih": 0.41134751773049644,
+    "marah": 0.3939393939393939,
+    "takut": 0.411214953271028,
+    "netral": 0.41530054644808745,
+    "terkejut": 0.32857142857142857,
+    "jijik": 0.09523809523809523
+  },
+  "best_seed_confusion_matrix": [
+    [
+      38,
+      4,
+      7,
+      9,
+      18,
+      13,
+      1
+    ],
+    [
+      3,
+      29,
+      2,
+      20,
+      9,
+      8,
+      1
+    ],
+    [
+      5,
+      11,
+      26,
+      18,
+      12,
+      11,
+      2
+    ],
+    [
+      10,
+      7,
+      3,
+      44,
+      7,
+      14,
+      2
+    ],
+    [
+      10,
+      7,
+      2,
+      25,
+      38,
+      8,
+      0
+    ],
+    [
+      4,
+      9,
+      7,
+      10,
+      5,
+      23,
+      2
+    ],
+    [
+      1,
+      2,
+      0,
+      1,
+      4,
+      3,
+      1
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\maksimal_early__split_A.csv"
+}
