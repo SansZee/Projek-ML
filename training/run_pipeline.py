@@ -185,6 +185,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Ekstrak seluruh cache fitur beku tanpa menunggu splits.csv (0% kebocoran)",
     )
+    parser.add_argument(
+        "--hybrid-only",
+        action="store_true",
+        help="Latih fusi Hybrid Champion (encoder terkuat per modalitas + Stacking)",
+    )
     args = parser.parse_args(argv)
 
     cooldown_s = max(0, min(int(args.cooldown_s), MAX_COOLDOWN_SECONDS))
@@ -223,6 +228,76 @@ def main(argv: list[str] | None = None) -> int:
     if not splits:
         print(f"Kolom split {args.splits} tidak ditemukan di splits.csv.")
         return 1
+
+    if args.hybrid_only:
+        ht = WaveTracker(cfg.runs_dir)
+        for _ in splits:
+            for _ in range(7):
+                ht.register("W2", 2.5)
+        for split_col in splits:
+            ft_dir = cfg.cache_dir / "finetuned" / split_col
+            champ_pair = {
+                "text": frozen_dir / "text_deberta_base.pt",
+                "audio": frozen_dir / "audio_emotion2vec_large.pt",
+                "visual": ft_dir / "visual_convnext_base.pt",
+            }
+            max_pair = {
+                "text": ft_dir / "text_modernbert_large.pt",
+                "audio": frozen_dir / "audio_emotion2vec_large.pt",
+                "visual": ft_dir / "visual_convnext_base.pt",
+            }
+            if all(p.exists() for p in champ_pair.values()):
+                for arch in ("early", "late", "gated_cross_attn", "mult"):
+                    _safe_run(
+                        cfg.runs_dir,
+                        f"Hybrid Best {arch} ({split_col})",
+                        train_cached_experiment,
+                        cfg,
+                        name=f"hybrid_best_{arch}",
+                        modality_caches=champ_pair,
+                        df=df,
+                        split_col=split_col,
+                        arch=arch,
+                        tracker=ht,
+                        wave="W2",
+                    )
+            if all(p.exists() for p in max_pair.values()):
+                for arch in ("late", "gated_cross_attn"):
+                    _safe_run(
+                        cfg.runs_dir,
+                        f"Hybrid Max {arch} ({split_col})",
+                        train_cached_experiment,
+                        cfg,
+                        name=f"hybrid_max_{arch}",
+                        modality_caches=max_pair,
+                        df=df,
+                        split_col=split_col,
+                        arch=arch,
+                        tracker=ht,
+                        wave="W2",
+                    )
+            _safe_run(
+                cfg.runs_dir,
+                f"Hybrid Stacking Ensemble ({split_col})",
+                run_stacking_ensemble,
+                cfg,
+                model_names=[
+                    "hemat_early",
+                    "hemat_late",
+                    "hybrid_best_early",
+                    "hybrid_best_late",
+                    "hybrid_best_gated_cross_attn",
+                    "hybrid_best_mult",
+                    "hybrid_max_late",
+                    "hybrid_max_gated_cross_attn",
+                ],
+                split_col=split_col,
+                tag="hybrid_stacking_ensemble",
+                tracker=ht,
+                wave="W2",
+            )
+        _safe_run(cfg.runs_dir, "Ringkas Hasil & Grafik Bab IV", build_bab4_report, cfg)
+        return 0
 
     tracker = WaveTracker(cfg.runs_dir)
     hemat_keys = list(PRIORITY_MODELS["hemat_extract"])

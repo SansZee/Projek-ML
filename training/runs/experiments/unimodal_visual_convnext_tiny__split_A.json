@@ -1,0 +1,347 @@
+{
+  "name": "unimodal_visual_convnext_tiny",
+  "split": "split_A",
+  "best_params": {
+    "lr": 0.00016019568611465226,
+    "proj_dim": 256,
+    "num_layers": 2,
+    "num_heads": 8,
+    "dropout": 0.22236519310393127,
+    "weight_decay": 0.009413993046829943,
+    "batch_size": 16,
+    "loss_fn": "label_smooth_0.1"
+  },
+  "macro_f1_mean": 0.4049,
+  "macro_f1_std": 0.0157,
+  "accuracy_mean": 0.4395,
+  "accuracy_std": 0.01,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.426,
+      "test_macro_f1": 0.3828,
+      "test_accuracy": 0.4254,
+      "per_class_f1": {
+        "senang": 0.4675324675324675,
+        "sedih": 0.4371584699453552,
+        "marah": 0.5133689839572193,
+        "takut": 0.4305555555555556,
+        "netral": 0.4221105527638191,
+        "terkejut": 0.23529411764705882,
+        "jijik": 0.17391304347826086
+      },
+      "confusion_matrix": [
+        [
+          36,
+          14,
+          6,
+          6,
+          23,
+          5,
+          0
+        ],
+        [
+          3,
+          40,
+          8,
+          4,
+          12,
+          4,
+          1
+        ],
+        [
+          6,
+          15,
+          48,
+          3,
+          5,
+          5,
+          3
+        ],
+        [
+          4,
+          11,
+          14,
+          31,
+          16,
+          10,
+          1
+        ],
+        [
+          10,
+          17,
+          12,
+          4,
+          42,
+          4,
+          1
+        ],
+        [
+          4,
+          12,
+          12,
+          7,
+          10,
+          12,
+          3
+        ],
+        [
+          1,
+          2,
+          2,
+          2,
+          1,
+          2,
+          2
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_visual_convnext_tiny__split_A__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.4262,
+      "test_macro_f1": 0.4139,
+      "test_accuracy": 0.4476,
+      "per_class_f1": {
+        "senang": 0.47435897435897434,
+        "sedih": 0.48148148148148145,
+        "marah": 0.48,
+        "takut": 0.49740932642487046,
+        "netral": 0.45348837209302323,
+        "terkejut": 0.2524271844660194,
+        "jijik": 0.25806451612903225
+      },
+      "confusion_matrix": [
+        [
+          37,
+          7,
+          9,
+          13,
+          15,
+          5,
+          4
+        ],
+        [
+          6,
+          39,
+          5,
+          8,
+          8,
+          4,
+          2
+        ],
+        [
+          3,
+          15,
+          42,
+          11,
+          2,
+          10,
+          2
+        ],
+        [
+          5,
+          7,
+          10,
+          48,
+          11,
+          6,
+          0
+        ],
+        [
+          13,
+          10,
+          10,
+          12,
+          39,
+          5,
+          1
+        ],
+        [
+          1,
+          11,
+          12,
+          11,
+          6,
+          13,
+          6
+        ],
+        [
+          1,
+          1,
+          2,
+          3,
+          1,
+          0,
+          4
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_visual_convnext_tiny__split_A__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.4161,
+      "test_macro_f1": 0.418,
+      "test_accuracy": 0.4456,
+      "per_class_f1": {
+        "senang": 0.5340909090909091,
+        "sedih": 0.4105960264900662,
+        "marah": 0.5052631578947369,
+        "takut": 0.47619047619047616,
+        "netral": 0.44680851063829785,
+        "terkejut": 0.24561403508771928,
+        "jijik": 0.3076923076923077
+      },
+      "confusion_matrix": [
+        [
+          47,
+          5,
+          8,
+          5,
+          18,
+          6,
+          1
+        ],
+        [
+          5,
+          31,
+          8,
+          7,
+          12,
+          7,
+          2
+        ],
+        [
+          6,
+          12,
+          48,
+          6,
+          4,
+          7,
+          2
+        ],
+        [
+          10,
+          7,
+          12,
+          35,
+          12,
+          11,
+          0
+        ],
+        [
+          12,
+          10,
+          15,
+          3,
+          42,
+          6,
+          2
+        ],
+        [
+          6,
+          12,
+          13,
+          3,
+          9,
+          14,
+          3
+        ],
+        [
+          0,
+          2,
+          1,
+          1,
+          1,
+          3,
+          4
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_visual_convnext_tiny__split_A__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.5340909090909091,
+    "sedih": 0.4105960264900662,
+    "marah": 0.5052631578947369,
+    "takut": 0.47619047619047616,
+    "netral": 0.44680851063829785,
+    "terkejut": 0.24561403508771928,
+    "jijik": 0.3076923076923077
+  },
+  "best_seed_confusion_matrix": [
+    [
+      47,
+      5,
+      8,
+      5,
+      18,
+      6,
+      1
+    ],
+    [
+      5,
+      31,
+      8,
+      7,
+      12,
+      7,
+      2
+    ],
+    [
+      6,
+      12,
+      48,
+      6,
+      4,
+      7,
+      2
+    ],
+    [
+      10,
+      7,
+      12,
+      35,
+      12,
+      11,
+      0
+    ],
+    [
+      12,
+      10,
+      15,
+      3,
+      42,
+      6,
+      2
+    ],
+    [
+      6,
+      12,
+      13,
+      3,
+      9,
+      14,
+      3
+    ],
+    [
+      0,
+      2,
+      1,
+      1,
+      1,
+      3,
+      4
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\unimodal_visual_convnext_tiny__split_A.csv"
+}

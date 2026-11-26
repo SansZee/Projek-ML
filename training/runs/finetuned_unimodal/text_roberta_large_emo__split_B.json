@@ -1,0 +1,92 @@
+{
+  "model_key": "text_roberta_large_emo",
+  "tier": "maksimal",
+  "modality": "text",
+  "split": "split_B",
+  "seed": 42,
+  "val_macro_f1": 0.2492,
+  "test_macro_f1": 0.2595,
+  "test_accuracy": 0.2998,
+  "per_class_f1": {
+    "senang": 0.4392523364485981,
+    "sedih": 0.35602094240837695,
+    "marah": 0.256,
+    "takut": 0.1326530612244898,
+    "netral": 0.2967032967032967,
+    "terkejut": 0.336,
+    "jijik": 0.0
+  },
+  "confusion_matrix": [
+    [
+      47,
+      12,
+      5,
+      31,
+      22,
+      6,
+      0
+    ],
+    [
+      10,
+      34,
+      17,
+      39,
+      17,
+      6,
+      0
+    ],
+    [
+      13,
+      8,
+      16,
+      16,
+      12,
+      5,
+      0
+    ],
+    [
+      7,
+      7,
+      2,
+      13,
+      6,
+      5,
+      0
+    ],
+    [
+      6,
+      1,
+      5,
+      29,
+      27,
+      18,
+      0
+    ],
+    [
+      4,
+      4,
+      7,
+      21,
+      7,
+      21,
+      0
+    ],
+    [
+      4,
+      2,
+      3,
+      7,
+      5,
+      0,
+      0
+    ]
+  ],
+  "vram_plan": {
+    "micro_bs": 8,
+    "grad_accum": 2,
+    "peak_allocated_gb": 0.066,
+    "peak_reserved_gb": 0.49
+  },
+  "cache_path": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\cache\\finetuned\\split_B\\text_roberta_large_emo.pt",
+  "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\text_roberta_large_emo__split_B__seed42.csv"
+}

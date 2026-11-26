@@ -1,0 +1,347 @@
+{
+  "name": "unimodal_visual_effnet_b0",
+  "split": "split_C",
+  "best_params": {
+    "lr": 0.00030860579740535354,
+    "proj_dim": 512,
+    "num_layers": 1,
+    "num_heads": 4,
+    "dropout": 0.40526990795364704,
+    "weight_decay": 0.0007591104805282694,
+    "batch_size": 32,
+    "loss_fn": "label_smooth_0.1"
+  },
+  "macro_f1_mean": 0.1757,
+  "macro_f1_std": 0.0046,
+  "accuracy_mean": 0.2269,
+  "accuracy_std": 0.0066,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.2979,
+      "test_macro_f1": 0.1769,
+      "test_accuracy": 0.2182,
+      "per_class_f1": {
+        "senang": 0.2894736842105263,
+        "sedih": 0.11475409836065574,
+        "marah": 0.17525773195876287,
+        "takut": 0.34782608695652173,
+        "netral": 0.14193548387096774,
+        "terkejut": 0.16923076923076924,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          22,
+          7,
+          8,
+          7,
+          13,
+          13,
+          2
+        ],
+        [
+          9,
+          7,
+          2,
+          12,
+          9,
+          6,
+          0
+        ],
+        [
+          20,
+          20,
+          17,
+          42,
+          18,
+          19,
+          1
+        ],
+        [
+          6,
+          16,
+          12,
+          40,
+          11,
+          11,
+          0
+        ],
+        [
+          17,
+          14,
+          6,
+          24,
+          11,
+          12,
+          1
+        ],
+        [
+          5,
+          13,
+          11,
+          9,
+          8,
+          11,
+          1
+        ],
+        [
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_visual_effnet_b0__split_C__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.2967,
+      "test_macro_f1": 0.1806,
+      "test_accuracy": 0.2343,
+      "per_class_f1": {
+        "senang": 0.30434782608695654,
+        "sedih": 0.11009174311926606,
+        "marah": 0.22429906542056074,
+        "takut": 0.33755274261603374,
+        "netral": 0.21782178217821782,
+        "terkejut": 0.06976744186046512,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          21,
+          6,
+          11,
+          10,
+          20,
+          4,
+          0
+        ],
+        [
+          8,
+          6,
+          5,
+          13,
+          12,
+          1,
+          0
+        ],
+        [
+          15,
+          18,
+          24,
+          44,
+          29,
+          7,
+          0
+        ],
+        [
+          5,
+          10,
+          10,
+          40,
+          22,
+          7,
+          2
+        ],
+        [
+          10,
+          9,
+          17,
+          21,
+          22,
+          6,
+          0
+        ],
+        [
+          6,
+          15,
+          9,
+          13,
+          12,
+          3,
+          0
+        ],
+        [
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_visual_effnet_b0__split_C__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.2524,
+      "test_macro_f1": 0.1696,
+      "test_accuracy": 0.2283,
+      "per_class_f1": {
+        "senang": 0.28368794326241137,
+        "sedih": 0.1348314606741573,
+        "marah": 0.16842105263157894,
+        "takut": 0.3607843137254902,
+        "netral": 0.2171945701357466,
+        "terkejut": 0.02247191011235955,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          20,
+          3,
+          7,
+          16,
+          16,
+          8,
+          2
+        ],
+        [
+          6,
+          6,
+          3,
+          12,
+          17,
+          1,
+          0
+        ],
+        [
+          18,
+          7,
+          16,
+          42,
+          46,
+          7,
+          1
+        ],
+        [
+          7,
+          14,
+          10,
+          46,
+          17,
+          2,
+          0
+        ],
+        [
+          10,
+          9,
+          13,
+          17,
+          24,
+          12,
+          0
+        ],
+        [
+          7,
+          5,
+          4,
+          26,
+          15,
+          1,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_visual_effnet_b0__split_C__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.30434782608695654,
+    "sedih": 0.11009174311926606,
+    "marah": 0.22429906542056074,
+    "takut": 0.33755274261603374,
+    "netral": 0.21782178217821782,
+    "terkejut": 0.06976744186046512,
+    "jijik": 0.0
+  },
+  "best_seed_confusion_matrix": [
+    [
+      21,
+      6,
+      11,
+      10,
+      20,
+      4,
+      0
+    ],
+    [
+      8,
+      6,
+      5,
+      13,
+      12,
+      1,
+      0
+    ],
+    [
+      15,
+      18,
+      24,
+      44,
+      29,
+      7,
+      0
+    ],
+    [
+      5,
+      10,
+      10,
+      40,
+      22,
+      7,
+      2
+    ],
+    [
+      10,
+      9,
+      17,
+      21,
+      22,
+      6,
+      0
+    ],
+    [
+      6,
+      15,
+      9,
+      13,
+      12,
+      3,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\unimodal_visual_effnet_b0__split_C.csv"
+}

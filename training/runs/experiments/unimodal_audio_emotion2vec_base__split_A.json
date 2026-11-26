@@ -1,0 +1,347 @@
+{
+  "name": "unimodal_audio_emotion2vec_base",
+  "split": "split_A",
+  "best_params": {
+    "lr": 9.423458056347295e-05,
+    "proj_dim": 256,
+    "num_layers": 1,
+    "num_heads": 4,
+    "dropout": 0.4367800455197461,
+    "weight_decay": 0.0002462963708743783,
+    "batch_size": 32,
+    "loss_fn": "focal_gamma_2"
+  },
+  "macro_f1_mean": 0.243,
+  "macro_f1_std": 0.008,
+  "accuracy_mean": 0.2984,
+  "accuracy_std": 0.0066,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.284,
+      "test_macro_f1": 0.2415,
+      "test_accuracy": 0.2984,
+      "per_class_f1": {
+        "senang": 0.31521739130434784,
+        "sedih": 0.3221476510067114,
+        "marah": 0.3270440251572327,
+        "takut": 0.2761904761904762,
+        "netral": 0.3756345177664975,
+        "terkejut": 0.07407407407407407,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          29,
+          9,
+          11,
+          22,
+          18,
+          1,
+          0
+        ],
+        [
+          12,
+          24,
+          7,
+          13,
+          10,
+          6,
+          0
+        ],
+        [
+          13,
+          6,
+          26,
+          23,
+          15,
+          2,
+          0
+        ],
+        [
+          14,
+          15,
+          9,
+          29,
+          17,
+          3,
+          0
+        ],
+        [
+          11,
+          9,
+          11,
+          17,
+          37,
+          5,
+          0
+        ],
+        [
+          13,
+          12,
+          10,
+          15,
+          7,
+          3,
+          0
+        ],
+        [
+          2,
+          2,
+          0,
+          4,
+          3,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_audio_emotion2vec_base__split_A__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.266,
+      "test_macro_f1": 0.2341,
+      "test_accuracy": 0.2903,
+      "per_class_f1": {
+        "senang": 0.3466666666666667,
+        "sedih": 0.2647058823529412,
+        "marah": 0.3624161073825503,
+        "takut": 0.28865979381443296,
+        "netral": 0.32222222222222224,
+        "terkejut": 0.05405405405405406,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          26,
+          7,
+          7,
+          30,
+          19,
+          1,
+          0
+        ],
+        [
+          6,
+          18,
+          3,
+          36,
+          7,
+          2,
+          0
+        ],
+        [
+          6,
+          6,
+          27,
+          32,
+          12,
+          2,
+          0
+        ],
+        [
+          10,
+          13,
+          7,
+          42,
+          14,
+          1,
+          0
+        ],
+        [
+          7,
+          8,
+          8,
+          33,
+          29,
+          5,
+          0
+        ],
+        [
+          4,
+          10,
+          12,
+          26,
+          6,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          0,
+          5,
+          3,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_audio_emotion2vec_base__split_A__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.2735,
+      "test_macro_f1": 0.2535,
+      "test_accuracy": 0.3065,
+      "per_class_f1": {
+        "senang": 0.36180904522613067,
+        "sedih": 0.2975206611570248,
+        "marah": 0.37777777777777777,
+        "takut": 0.2569832402234637,
+        "netral": 0.3417085427135678,
+        "terkejut": 0.13861386138613863,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          36,
+          2,
+          14,
+          17,
+          17,
+          4,
+          0
+        ],
+        [
+          11,
+          18,
+          5,
+          16,
+          12,
+          10,
+          0
+        ],
+        [
+          18,
+          5,
+          34,
+          9,
+          13,
+          6,
+          0
+        ],
+        [
+          14,
+          11,
+          12,
+          23,
+          21,
+          5,
+          1
+        ],
+        [
+          15,
+          5,
+          14,
+          14,
+          34,
+          8,
+          0
+        ],
+        [
+          13,
+          6,
+          15,
+          10,
+          9,
+          7,
+          0
+        ],
+        [
+          2,
+          2,
+          1,
+          3,
+          3,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\unimodal_audio_emotion2vec_base__split_A__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.36180904522613067,
+    "sedih": 0.2975206611570248,
+    "marah": 0.37777777777777777,
+    "takut": 0.2569832402234637,
+    "netral": 0.3417085427135678,
+    "terkejut": 0.13861386138613863,
+    "jijik": 0.0
+  },
+  "best_seed_confusion_matrix": [
+    [
+      36,
+      2,
+      14,
+      17,
+      17,
+      4,
+      0
+    ],
+    [
+      11,
+      18,
+      5,
+      16,
+      12,
+      10,
+      0
+    ],
+    [
+      18,
+      5,
+      34,
+      9,
+      13,
+      6,
+      0
+    ],
+    [
+      14,
+      11,
+      12,
+      23,
+      21,
+      5,
+      1
+    ],
+    [
+      15,
+      5,
+      14,
+      14,
+      34,
+      8,
+      0
+    ],
+    [
+      13,
+      6,
+      15,
+      10,
+      9,
+      7,
+      0
+    ],
+    [
+      2,
+      2,
+      1,
+      3,
+      3,
+      1,
+      0
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\unimodal_audio_emotion2vec_base__split_A.csv"
+}

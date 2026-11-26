@@ -1,0 +1,348 @@
+{
+  "name": "hybrid_best_gated_cross_attn",
+  "split": "split_B",
+  "best_params": {
+    "lr": 6.0758085133366966e-05,
+    "proj_dim": 256,
+    "num_layers": 1,
+    "num_heads": 4,
+    "dropout": 0.23661147045343367,
+    "weight_decay": 0.0009780337016659412,
+    "batch_size": 32,
+    "loss_fn": "label_smooth_0.1",
+    "modality_dropout": 0.1300170052944527
+  },
+  "macro_f1_mean": 0.2122,
+  "macro_f1_std": 0.0052,
+  "accuracy_mean": 0.289,
+  "accuracy_std": 0.0155,
+  "seeds": [
+    {
+      "seed": 42,
+      "val_macro_f1": 0.2864,
+      "test_macro_f1": 0.2112,
+      "test_accuracy": 0.2694,
+      "per_class_f1": {
+        "senang": 0.5116279069767442,
+        "sedih": 0.30097087378640774,
+        "marah": 0.22950819672131148,
+        "takut": 0.09433962264150944,
+        "netral": 0.24,
+        "terkejut": 0.1016949152542373,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          55,
+          13,
+          19,
+          9,
+          18,
+          7,
+          2
+        ],
+        [
+          7,
+          31,
+          28,
+          18,
+          18,
+          20,
+          1
+        ],
+        [
+          6,
+          9,
+          21,
+          14,
+          13,
+          5,
+          2
+        ],
+        [
+          6,
+          7,
+          6,
+          5,
+          10,
+          6,
+          0
+        ],
+        [
+          11,
+          11,
+          22,
+          9,
+          24,
+          9,
+          0
+        ],
+        [
+          7,
+          10,
+          15,
+          9,
+          17,
+          6,
+          0
+        ],
+        [
+          0,
+          2,
+          2,
+          2,
+          14,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hybrid_best_gated_cross_attn__split_B__seed42.csv"
+    },
+    {
+      "seed": 123,
+      "val_macro_f1": 0.2422,
+      "test_macro_f1": 0.219,
+      "test_accuracy": 0.2903,
+      "per_class_f1": {
+        "senang": 0.5523012552301255,
+        "sedih": 0.3020833333333333,
+        "marah": 0.25870646766169153,
+        "takut": 0.11764705882352941,
+        "netral": 0.22826086956521738,
+        "terkejut": 0.07407407407407407,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          66,
+          9,
+          19,
+          10,
+          18,
+          1,
+          0
+        ],
+        [
+          11,
+          29,
+          32,
+          30,
+          16,
+          5,
+          0
+        ],
+        [
+          10,
+          5,
+          26,
+          13,
+          10,
+          6,
+          0
+        ],
+        [
+          6,
+          7,
+          9,
+          8,
+          9,
+          1,
+          0
+        ],
+        [
+          15,
+          10,
+          26,
+          14,
+          21,
+          0,
+          0
+        ],
+        [
+          7,
+          6,
+          16,
+          16,
+          16,
+          3,
+          0
+        ],
+        [
+          1,
+          3,
+          3,
+          5,
+          8,
+          1,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hybrid_best_gated_cross_attn__split_B__seed123.csv"
+    },
+    {
+      "seed": 2026,
+      "val_macro_f1": 0.2225,
+      "test_macro_f1": 0.2064,
+      "test_accuracy": 0.3074,
+      "per_class_f1": {
+        "senang": 0.5641025641025641,
+        "sedih": 0.3431372549019608,
+        "marah": 0.27586206896551724,
+        "takut": 0.10256410256410256,
+        "netral": 0.13533834586466165,
+        "terkejut": 0.023809523809523808,
+        "jijik": 0.0
+      },
+      "confusion_matrix": [
+        [
+          77,
+          5,
+          25,
+          4,
+          9,
+          3,
+          0
+        ],
+        [
+          14,
+          35,
+          43,
+          18,
+          6,
+          7,
+          0
+        ],
+        [
+          16,
+          5,
+          36,
+          3,
+          6,
+          4,
+          0
+        ],
+        [
+          8,
+          8,
+          17,
+          4,
+          3,
+          0,
+          0
+        ],
+        [
+          24,
+          11,
+          35,
+          2,
+          9,
+          5,
+          0
+        ],
+        [
+          10,
+          11,
+          30,
+          5,
+          7,
+          1,
+          0
+        ],
+        [
+          1,
+          6,
+          5,
+          2,
+          7,
+          0,
+          0
+        ]
+      ],
+      "predictions_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\predictions\\hybrid_best_gated_cross_attn__split_B__seed2026.csv"
+    }
+  ],
+  "best_seed_per_class_f1": {
+    "senang": 0.5523012552301255,
+    "sedih": 0.3020833333333333,
+    "marah": 0.25870646766169153,
+    "takut": 0.11764705882352941,
+    "netral": 0.22826086956521738,
+    "terkejut": 0.07407407407407407,
+    "jijik": 0.0
+  },
+  "best_seed_confusion_matrix": [
+    [
+      66,
+      9,
+      19,
+      10,
+      18,
+      1,
+      0
+    ],
+    [
+      11,
+      29,
+      32,
+      30,
+      16,
+      5,
+      0
+    ],
+    [
+      10,
+      5,
+      26,
+      13,
+      10,
+      6,
+      0
+    ],
+    [
+      6,
+      7,
+      9,
+      8,
+      9,
+      1,
+      0
+    ],
+    [
+      15,
+      10,
+      26,
+      14,
+      21,
+      0,
+      0
+    ],
+    [
+      7,
+      6,
+      16,
+      16,
+      16,
+      3,
+      0
+    ],
+    [
+      1,
+      3,
+      3,
+      5,
+      8,
+      1,
+      0
+    ]
+  ],
+  "classes": [
+    "senang",
+    "sedih",
+    "marah",
+    "takut",
+    "netral",
+    "terkejut",
+    "jijik"
+  ],
+  "optuna_csv": "D:\\Kuliah\\Semester 5\\ml - pak nadhif\\project\\Projek-ML\\training\\runs\\optuna\\hybrid_best_gated_cross_attn__split_B.csv"
+}

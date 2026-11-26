@@ -562,10 +562,11 @@ def run_stacking_ensemble(
     *,
     model_names: list[str],
     split_col: str,
+    tag: str = "stacking_ensemble",
     seeds: tuple[int, ...] = EVAL_SEEDS,
 ) -> dict[str, object] | None:
     """Out-of-Fold / Val-tuned Stacking Ensemble menggabungkan logit Hemat + Maksimal."""
-    out_path = cfg.runs_dir / "experiments" / f"stacking_ensemble__{split_col}.json"
+    out_path = cfg.runs_dir / "experiments" / f"{tag}__{split_col}.json"
     if out_path.exists():
         return json.loads(out_path.read_text(encoding="utf-8"))
 
@@ -606,7 +607,7 @@ def run_stacking_ensemble(
     if not seed_runs:
         return None
     summary = _aggregate_seed_results(
-        tag="stacking_ensemble",
+        tag=tag,
         split_col=split_col,
         seed_runs=seed_runs,
         best_params={"base_models": model_names},

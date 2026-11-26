@@ -72,24 +72,38 @@ def main() -> None:
     st.write(f"**Dialog:** {row.get('text', '')}")
     st.write(f"**Label Ground Truth:** `{row['label']}`")
 
-    # Baca dari cache fitur bila ada
-    split_guess = chosen_ckpt.stem.split("__")[-1]
-    cache_candidates = {
-        "text": [cfg.cache_dir / "finetuned" / split_guess / "text_deberta_large.pt", cfg.cache_dir / "frozen" / "text_deberta_base.pt"],
-        "audio": [cfg.cache_dir / "finetuned" / split_guess / "audio_wavlm_large.pt", cfg.cache_dir / "frozen" / "audio_emotion2vec_large.pt", cfg.cache_dir / "frozen" / "audio_wavlm_base.pt"],
-        "visual": [cfg.cache_dir / "finetuned" / split_guess / "visual_videomaev2_base.pt", cfg.cache_dir / "finetuned" / split_guess / "visual_convnext_base.pt", cfg.cache_dir / "frozen" / "visual_emotieff_b0.pt"],
-    }
+    # Baca dari cache fitur sesuai dimensi dan jenis checkpoint terpilih
+    stem = chosen_ckpt.stem
+    split_guess = stem.split("__")[-1]
+    if stem.startswith("hemat"):
+        cache_candidates = {
+            "text": [cfg.cache_dir / "frozen" / "text_deberta_base.pt"],
+            "audio": [cfg.cache_dir / "frozen" / "audio_wavlm_base.pt"],
+            "visual": [cfg.cache_dir / "frozen" / "visual_emotieff_b0.pt"],
+        }
+    elif stem.startswith("hybrid"):
+        cache_candidates = {
+            "text": [cfg.cache_dir / "finetuned" / split_guess / "text_modernbert_large.pt", cfg.cache_dir / "frozen" / "text_deberta_base.pt"],
+            "audio": [cfg.cache_dir / "frozen" / "audio_emotion2vec_large.pt"],
+            "visual": [cfg.cache_dir / "finetuned" / split_guess / "visual_convnext_base.pt"],
+        }
+    else:
+        cache_candidates = {
+            "text": [cfg.cache_dir / "finetuned" / split_guess / "text_deberta_large.pt", cfg.cache_dir / "finetuned" / split_guess / "text_modernbert_large.pt", cfg.cache_dir / "frozen" / "text_deberta_base.pt"],
+            "audio": [cfg.cache_dir / "finetuned" / split_guess / "audio_wavlm_large.pt", cfg.cache_dir / "frozen" / "audio_emotion2vec_large.pt", cfg.cache_dir / "frozen" / "audio_wavlm_base.pt"],
+            "visual": [cfg.cache_dir / "finetuned" / split_guess / "visual_videomaev2_base.pt", cfg.cache_dir / "finetuned" / split_guess / "visual_convnext_base.pt", cfg.cache_dir / "frozen" / "visual_emotieff_b0.pt"],
+        }
 
     inputs: dict[str, torch.Tensor] = {}
     for mod, enabled in (("text", use_text), ("audio", use_audio), ("visual", use_visual)):
-        if not enabled:
+        if not enabled or mod not in payload["in_dims"]:
             continue
+        expected_dim = int(payload["in_dims"][mod])
         for cpath in cache_candidates[mod]:
             if cpath.exists():
                 data = torch.load(cpath, map_location="cpu", weights_only=False)["feats"]
-                if clip_id in data:
-                    t = data[clip_id].float()
-                    inputs[mod] = t.unsqueeze(0)
+                if clip_id in data and int(data[clip_id].shape[-1]) == expected_dim:
+                    inputs[mod] = data[clip_id].float().unsqueeze(0)
                     break
 
     if not inputs:
